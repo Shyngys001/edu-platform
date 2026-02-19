@@ -1,0 +1,52 @@
+# Render Blueprint - edu-platform
+# Deploy: push to GitHub, then in Render Dashboard: New > Blueprint > connect repo
+
+databases:
+  - name: edu-platform-db
+    databaseName: edu_platform
+    plan: free
+
+services:
+  # Backend API (FastAPI)
+  - type: web
+    name: edu-platform-api
+    runtime: python
+    region: frankfurt
+
+    rootDir: backend
+
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn app.main:app --host 0.0.0.0 --port $PORT
+
+    envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: edu-platform-db
+          property: connectionString
+      - key: SECRET_KEY
+        generateValue: true
+      - key: CORS_ORIGINS
+        fromService:
+          name: edu-platform-web
+          type: web
+          property: host
+      - key: OPENAI_API_KEY
+        sync: false
+
+  # Frontend (React + Vite)
+  - type: web
+    name: edu-platform-web
+    runtime: static
+    region: frankfurt
+
+    rootDir: frontend
+
+    buildCommand: npm install && npm run build
+    staticPublishPath: dist
+
+    envVars:
+      - key: VITE_API_HOST
+        fromService:
+          name: edu-platform-api
+          type: web
+          property: host
