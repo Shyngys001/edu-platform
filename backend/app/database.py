@@ -3,12 +3,17 @@ from sqlalchemy.orm import sessionmaker, DeclarativeBase
 
 from app.config import settings
 
+# Render provides postgres:// but SQLAlchemy needs postgresql://
+_db_url = settings.DATABASE_URL
+if _db_url.startswith("postgres://"):
+    _db_url = "postgresql://" + _db_url[10:]
+
 _connect_args = {}
-if settings.DATABASE_URL.startswith("sqlite"):
+if _db_url.startswith("sqlite"):
     _connect_args = {"check_same_thread": False}
 
 engine = create_engine(
-    settings.DATABASE_URL,
+    _db_url,
     connect_args=_connect_args,
     echo=False,
 )

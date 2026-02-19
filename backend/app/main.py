@@ -26,6 +26,8 @@ def _normalize_origin(s: str) -> str:
     return f"https://{s}"
 
 _origins = [_normalize_origin(o) for o in settings.CORS_ORIGINS.split(",") if o.strip()]
+if not _origins:
+    _origins = ["https://edu-platform-web.onrender.com", "http://localhost:5173"]
 app.add_middleware(
     CORSMiddleware,
     allow_origins=_origins,
