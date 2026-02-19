@@ -37,7 +37,6 @@ services:
   - type: web
     name: edu-platform-web
     runtime: static
-    region: frankfurt
 
     rootDir: frontend
 
