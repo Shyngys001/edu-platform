@@ -1,8 +1,10 @@
 import { useState, useEffect } from 'react';
 import { api } from '../../utils/api';
+import { useT } from '../../utils/i18n';
 import toast from 'react-hot-toast';
 
 export default function Leaderboard() {
+  const t = useT();
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -16,17 +18,17 @@ export default function Leaderboard() {
 
   return (
     <div>
-      <h1 style={{ marginBottom: 24 }}>Leaderboard</h1>
+      <h1 style={{ marginBottom: 24 }}>{t('leaderboard')}</h1>
       <div className="card">
         <div className="table-wrap">
           <table>
             <thead>
               <tr>
-                <th>Rank</th>
-                <th>Name</th>
-                <th>Grade</th>
-                <th>Level</th>
-                <th>Points</th>
+                <th>{t('rank')}</th>
+                <th>{t('name')}</th>
+                <th>{t('grade')}</th>
+                <th>{t('level')}</th>
+                <th>{t('points')}</th>
               </tr>
             </thead>
             <tbody>
@@ -37,7 +39,7 @@ export default function Leaderboard() {
                   <td>{u.grade || '-'}</td>
                   <td>
                     <span className={`badge badge-${u.level === 'Advanced' ? 'success' : u.level === 'Intermediate' ? 'warning' : 'primary'}`}>
-                      {u.level}
+                      {t(u.level === 'Advanced' ? 'levelAdvanced' : u.level === 'Intermediate' ? 'levelIntermediate' : 'levelBeginner')}
                     </span>
                   </td>
                   <td style={{ fontWeight: 700, fontSize: '1.1rem' }}>{u.points}</td>
@@ -46,7 +48,7 @@ export default function Leaderboard() {
             </tbody>
           </table>
         </div>
-        {data.length === 0 && <div className="empty-state"><p>No students yet</p></div>}
+        {data.length === 0 && <div className="empty-state"><p>{t('noStudentsYet')}</p></div>}
       </div>
     </div>
   );

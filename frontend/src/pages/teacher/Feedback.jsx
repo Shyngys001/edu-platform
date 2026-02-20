@@ -1,9 +1,11 @@
 import { useState, useEffect } from 'react';
 import { api } from '../../utils/api';
+import { useT } from '../../utils/i18n';
 import toast from 'react-hot-toast';
 import { FiSend } from 'react-icons/fi';
 
 export default function FeedbackPage() {
+  const t = useT();
   const [students, setStudents] = useState([]);
   const [feedback, setFeedback] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -29,13 +31,13 @@ export default function FeedbackPage() {
   async function sendFeedback(e) {
     e.preventDefault();
     if (!selectedStudent || !message.trim()) {
-      toast.error('Select a student and type a message');
+      toast.error(t('selectStudentAndMessage'));
       return;
     }
     setSending(true);
     try {
       await api.post('/teacher/feedback', { student_id: parseInt(selectedStudent), message });
-      toast.success('Feedback sent');
+      toast.success(t('feedbackSent'));
       setMessage('');
       load();
     } catch (e) {
@@ -49,34 +51,34 @@ export default function FeedbackPage() {
 
   return (
     <div>
-      <h1 style={{ marginBottom: 24 }}>Student Feedback</h1>
+      <h1 style={{ marginBottom: 24 }}>{t('studentFeedback')}</h1>
 
       <div className="card" style={{ marginBottom: 24 }}>
-        <div className="card-header">Send Feedback</div>
+        <div className="card-header">{t('sendFeedback')}</div>
         <form onSubmit={sendFeedback}>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 2fr auto', gap: 12, alignItems: 'end' }}>
             <div className="form-group" style={{ margin: 0 }}>
-              <label>Student</label>
+              <label>{t('student')}</label>
               <select className="form-input" value={selectedStudent} onChange={e => setSelectedStudent(e.target.value)}>
-                <option value="">Select student...</option>
+                <option value="">{t('selectStudent')}</option>
                 {students.map(s => <option key={s.id} value={s.id}>{s.full_name} ({s.grade})</option>)}
               </select>
             </div>
             <div className="form-group" style={{ margin: 0 }}>
-              <label>Message</label>
-              <input className="form-input" value={message} onChange={e => setMessage(e.target.value)} placeholder="Your feedback..." />
+              <label>{t('yourFeedback')}</label>
+              <input className="form-input" value={message} onChange={e => setMessage(e.target.value)} placeholder={t('yourFeedback')} />
             </div>
             <button className="btn btn-primary" type="submit" disabled={sending}>
-              <FiSend /> {sending ? 'Sending...' : 'Send'}
+              <FiSend /> {sending ? t('sending') : t('send')}
             </button>
           </div>
         </form>
       </div>
 
       <div className="card">
-        <div className="card-header">Sent Messages</div>
+        <div className="card-header">{t('sentMessages')}</div>
         {feedback.length === 0 ? (
-          <div className="empty-state"><p>No feedback sent yet</p></div>
+          <div className="empty-state"><p>{t('noFeedback')}</p></div>
         ) : (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
             {feedback.map(f => (

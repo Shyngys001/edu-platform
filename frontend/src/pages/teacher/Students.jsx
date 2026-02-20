@@ -1,8 +1,10 @@
 import { useState, useEffect } from 'react';
 import { api } from '../../utils/api';
+import { useT } from '../../utils/i18n';
 import toast from 'react-hot-toast';
 
 export default function Students() {
+  const t = useT();
   const [students, setStudents] = useState([]);
   const [loading, setLoading] = useState(true);
   const [gradeFilter, setGradeFilter] = useState('');
@@ -39,11 +41,11 @@ export default function Students() {
 
   return (
     <div>
-      <h1 style={{ marginBottom: 24 }}>Student Management</h1>
+      <h1 style={{ marginBottom: 24 }}>{t('studentManagement')}</h1>
 
       <div style={{ display: 'flex', gap: 12, marginBottom: 20 }}>
         <select className="form-input" style={{ maxWidth: 200 }} value={gradeFilter} onChange={e => setGradeFilter(e.target.value)}>
-          <option value="">All Grades</option>
+          <option value="">{t('allGrades')}</option>
           {grades.map(g => <option key={g} value={g}>{g}</option>)}
         </select>
       </div>
@@ -51,19 +53,19 @@ export default function Students() {
       {loading ? (
         <div className="loading"><div className="spinner" /></div>
       ) : (
-        <div style={{ display: 'flex', gap: 20 }}>
+        <div className="students-layout" style={{ display: 'flex', gap: 20 }}>
           <div style={{ flex: 1 }}>
             <div className="card" style={{ padding: 0, overflow: 'hidden' }}>
               <div className="table-wrap">
                 <table>
                   <thead>
                     <tr>
-                      <th>Name</th>
-                      <th>Grade</th>
-                      <th>Level</th>
-                      <th>Points</th>
-                      <th>Progress</th>
-                      <th>Avg Score</th>
+                      <th>{t('name')}</th>
+                      <th>{t('grade')}</th>
+                      <th>{t('level')}</th>
+                      <th>{t('points')}</th>
+                      <th>{t('progress')}</th>
+                      <th>{t('avgTestScore')}</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -71,7 +73,7 @@ export default function Students() {
                       <tr key={s.id} onClick={() => openDetail(s.id)} style={{ cursor: 'pointer', background: selected === s.id ? '#EEF2FF' : undefined }}>
                         <td style={{ fontWeight: 600 }}>{s.full_name}</td>
                         <td>{s.grade || '-'}</td>
-                        <td><span className={`badge badge-${s.level === 'Advanced' ? 'success' : s.level === 'Intermediate' ? 'warning' : 'primary'}`}>{s.level}</span></td>
+                        <td><span className={`badge badge-${s.level === 'Advanced' ? 'success' : s.level === 'Intermediate' ? 'warning' : 'primary'}`}>{t(s.level === 'Advanced' ? 'levelAdvanced' : s.level === 'Intermediate' ? 'levelIntermediate' : 'levelBeginner')}</span></td>
                         <td>{s.points}</td>
                         <td>
                           <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
@@ -87,7 +89,7 @@ export default function Students() {
                   </tbody>
                 </table>
               </div>
-              {students.length === 0 && <div className="empty-state"><p>No students found</p></div>}
+              {students.length === 0 && <div className="empty-state"><p>{t('noStudentsFound')}</p></div>}
             </div>
           </div>
 
@@ -96,26 +98,26 @@ export default function Students() {
               <div className="card">
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
                   <h2 style={{ fontSize: '1.1rem' }}>{detail.full_name}</h2>
-                  <button className="btn btn-secondary btn-sm" onClick={() => { setDetail(null); setSelected(null); }}>Close</button>
+                  <button className="btn btn-secondary btn-sm" onClick={() => { setDetail(null); setSelected(null); }}>{t('close')}</button>
                 </div>
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, marginBottom: 16 }}>
-                  <div><span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>Grade</span><br/><strong>{detail.grade || '-'}</strong></div>
-                  <div><span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>Level</span><br/><strong>{detail.level}</strong></div>
-                  <div><span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>Points</span><br/><strong>{detail.points}</strong></div>
-                  <div><span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>Streak</span><br/><strong>{detail.streak_days} days</strong></div>
+                  <div><span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>{t('grade')}</span><br/><strong>{detail.grade || '-'}</strong></div>
+                  <div><span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>{t('level')}</span><br/><strong>{t(detail.level === 'Advanced' ? 'levelAdvanced' : detail.level === 'Intermediate' ? 'levelIntermediate' : 'levelBeginner')}</strong></div>
+                  <div><span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>{t('points')}</span><br/><strong>{detail.points}</strong></div>
+                  <div><span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>{t('streak')}</span><br/><strong>{detail.streak_days} {t('days')}</strong></div>
                 </div>
 
                 <div style={{ marginBottom: 16 }}>
-                  <span style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>Progress</span>
+                  <span style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>{t('progress')}</span>
                   <div className="progress-bar" style={{ marginTop: 4 }}>
                     <div className="fill" style={{ width: `${detail.progress_percent}%` }} />
                   </div>
-                  <span style={{ fontSize: '0.75rem' }}>{detail.completed_lessons}/{detail.total_lessons} lessons</span>
+                  <span style={{ fontSize: '0.75rem' }}>{detail.completed_lessons}/{detail.total_lessons} {t('lessonsLabel')}</span>
                 </div>
 
                 {detail.weak_topics?.length > 0 && (
                   <div style={{ marginBottom: 16 }}>
-                    <span style={{ fontSize: '0.8rem', fontWeight: 600, color: 'var(--text-secondary)' }}>Weak Topics</span>
+                    <span style={{ fontSize: '0.8rem', fontWeight: 600, color: 'var(--text-secondary)' }}>{t('weakTopics')}</span>
                     {detail.weak_topics.slice(0, 3).map((w, i) => (
                       <div key={i} style={{ display: 'flex', justifyContent: 'space-between', padding: '4px 0', fontSize: '0.85rem' }}>
                         <span>{w.module}</span>
@@ -127,7 +129,7 @@ export default function Students() {
 
                 {detail.test_history?.length > 0 && (
                   <div>
-                    <span style={{ fontSize: '0.8rem', fontWeight: 600, color: 'var(--text-secondary)' }}>Recent Tests</span>
+                    <span style={{ fontSize: '0.8rem', fontWeight: 600, color: 'var(--text-secondary)' }}>{t('recentTests')}</span>
                     {detail.test_history.slice(0, 5).map((t, i) => (
                       <div key={i} style={{ display: 'flex', justifyContent: 'space-between', padding: '4px 0', fontSize: '0.8rem' }}>
                         <span>{t.test_title}</span>

@@ -1,9 +1,11 @@
 import { useState, useEffect } from 'react';
 import { api } from '../../utils/api';
+import { useT } from '../../utils/i18n';
 import toast from 'react-hot-toast';
 import { FiMail, FiCheckCircle } from 'react-icons/fi';
 
 export default function Inbox() {
+  const t = useT();
   const [messages, setMessages] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -24,9 +26,9 @@ export default function Inbox() {
 
   return (
     <div>
-      <h1 style={{ marginBottom: 24 }}>Inbox</h1>
+      <h1 style={{ marginBottom: 24 }}>{t('inbox')}</h1>
       {messages.length === 0 ? (
-        <div className="empty-state"><div className="icon">📬</div><p>No messages yet</p></div>
+        <div className="empty-state"><div className="icon">📬</div><p>{t('noMessages')}</p></div>
       ) : (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
           {messages.map(m => (

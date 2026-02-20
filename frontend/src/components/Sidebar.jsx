@@ -9,7 +9,7 @@ import {
   FiLogOut, FiInbox, FiDownload, FiMessageCircle,
 } from 'react-icons/fi';
 
-export default function Sidebar() {
+export default function Sidebar({ onNavClick }) {
   const { role, fullName } = getAuth();
   const t = useT();
 
@@ -54,7 +54,7 @@ export default function Sidebar() {
       </div>
 
       <div className="sidebar-badge-kz">
-        🇰🇿 Made in Kazakhstan
+        🇰🇿 {t('madeInKZ')}
       </div>
 
       <nav className="sidebar-nav">
@@ -64,6 +64,7 @@ export default function Sidebar() {
             to={l.to}
             end={l.to === '/student' || l.to === '/teacher'}
             className={({ isActive }) => `sidebar-link ${isActive ? 'active' : ''}`}
+            onClick={onNavClick}
           >
             {l.icon}
             <span>{l.label}</span>
@@ -71,7 +72,7 @@ export default function Sidebar() {
         ))}
       </nav>
       <div className="sidebar-footer">
-        <button className="sidebar-link" onClick={logout} style={{ width: '100%', border: 'none', background: 'none', cursor: 'pointer' }}>
+        <button className="sidebar-link" onClick={() => { logout(); onNavClick?.(); }} style={{ width: '100%', border: 'none', background: 'none', cursor: 'pointer' }}>
           <FiLogOut />
           <span>{t('logout')}</span>
         </button>

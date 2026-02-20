@@ -1,10 +1,12 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { api } from '../../utils/api';
+import { useT } from '../../utils/i18n';
 import toast from 'react-hot-toast';
 import { FiCheck, FiBookOpen } from 'react-icons/fi';
 
 export default function Lessons() {
+  const t = useT();
   const [modules, setModules] = useState([]);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
@@ -17,7 +19,7 @@ export default function Lessons() {
 
   return (
     <div>
-      <h1 style={{ marginBottom: 24 }}>Theory Lessons</h1>
+      <h1 style={{ marginBottom: 24 }}>{t('theoryLessons')}</h1>
       <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
         {modules.map(m => (
           <div key={m.id} className="card">

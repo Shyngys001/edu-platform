@@ -1,9 +1,11 @@
 import { useState, useEffect } from 'react';
 import { api } from '../../utils/api';
+import { useT } from '../../utils/i18n';
 import toast from 'react-hot-toast';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line } from 'recharts';
 
 export default function Statistics() {
+  const t = useT();
   const [stats, setStats] = useState(null);
   const [loading, setLoading] = useState(true);
 
@@ -22,33 +24,33 @@ export default function Statistics() {
 
   return (
     <div>
-      <h1 style={{ marginBottom: 24 }}>My Statistics</h1>
+      <h1 style={{ marginBottom: 24 }}>{t('myStatistics')}</h1>
 
       <div className="stats-grid">
         <div className="stat-card">
-          <div className="label">Completed Lessons</div>
+          <div className="label">{t('completedLessons')}</div>
           <div className="value">{stats.completed_lessons}/{stats.total_lessons}</div>
         </div>
         <div className="stat-card">
-          <div className="label">Progress</div>
+          <div className="label">{t('progress')}</div>
           <div className="value">{stats.progress_percent}%</div>
           <div className="progress-bar" style={{ marginTop: 8 }}>
             <div className="fill" style={{ width: `${stats.progress_percent}%` }} />
           </div>
         </div>
         <div className="stat-card">
-          <div className="label">Total Points</div>
+          <div className="label">{t('totalPoints')}</div>
           <div className="value">{stats.points}</div>
         </div>
         <div className="stat-card">
-          <div className="label">Level</div>
+          <div className="label">{t('level')}</div>
           <div className="value">{stats.level}</div>
         </div>
       </div>
 
       {scoreData.length > 0 && (
         <div className="card" style={{ marginBottom: 24 }}>
-          <div className="card-header">Test Scores Over Time</div>
+          <div className="card-header">{t('testScoresOverTime')}</div>
           <ResponsiveContainer width="100%" height={300}>
             <LineChart data={scoreData}>
               <CartesianGrid strokeDasharray="3 3" stroke="#E5E7EB" />
@@ -63,7 +65,7 @@ export default function Statistics() {
 
       {stats.weak_topics.length > 0 && (
         <div className="card">
-          <div className="card-header">Performance by Module</div>
+          <div className="card-header">{t('performanceByModule')}</div>
           <ResponsiveContainer width="100%" height={300}>
             <BarChart data={stats.weak_topics}>
               <CartesianGrid strokeDasharray="3 3" stroke="#E5E7EB" />

@@ -229,7 +229,7 @@ export default function Messenger() {
         {t('messenger')}
       </h1>
 
-      <div style={{ display: 'grid', gridTemplateColumns: '300px 1fr', gap: 16, height: 'calc(100vh - 160px)' }}>
+      <div className="messenger-layout" style={{ display: 'grid', gridTemplateColumns: '300px 1fr', gap: 16, height: 'calc(100vh - 160px)' }}>
         {/* Left panel */}
         <div className="card" style={{ padding: 0, overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
           <div style={{ display: 'flex', borderBottom: '1px solid var(--border)' }}>

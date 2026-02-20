@@ -1,8 +1,10 @@
 import { useState, useEffect } from 'react';
 import { api } from '../../utils/api';
+import { useT } from '../../utils/i18n';
 import toast from 'react-hot-toast';
 
 export default function TeacherDashboard() {
+  const t = useT();
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
 
@@ -15,32 +17,32 @@ export default function TeacherDashboard() {
 
   return (
     <div>
-      <h1 style={{ marginBottom: 24 }}>Teacher Dashboard</h1>
+      <h1 style={{ marginBottom: 24 }}>{t('teacherDashboard')}</h1>
 
       <div className="stats-grid">
         <div className="stat-card">
-          <div className="label">Total Students</div>
+          <div className="label">{t('totalStudents')}</div>
           <div className="value">{data.num_students}</div>
         </div>
         <div className="stat-card">
-          <div className="label">Average Score</div>
+          <div className="label">{t('averageScore')}</div>
           <div className="value">{data.avg_score}</div>
         </div>
       </div>
 
       <div className="card">
-        <div className="card-header">Recent Activity</div>
+        <div className="card-header">{t('recentActivity')}</div>
         {data.recent_activity.length === 0 ? (
-          <div className="empty-state"><p>No activity yet</p></div>
+          <div className="empty-state"><p>{t('noActivityYet')}</p></div>
         ) : (
           <div className="table-wrap">
             <table>
               <thead>
                 <tr>
-                  <th>Student</th>
-                  <th>Test</th>
-                  <th>Score</th>
-                  <th>Date</th>
+                  <th>{t('student')}</th>
+                  <th>{t('test')}</th>
+                  <th>{t('score')}</th>
+                  <th>{t('date')}</th>
                 </tr>
               </thead>
               <tbody>
