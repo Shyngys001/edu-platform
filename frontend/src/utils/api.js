@@ -1,11 +1,8 @@
-// VITE_API_URL = full URL. VITE_API_HOST = host (add .onrender.com if missing)
+// Same-origin when frontend served from backend; VITE_API_URL for separate deploy; localhost for dev
 const _apiUrl = import.meta.env.VITE_API_URL || '';
-const _apiHost = import.meta.env.VITE_API_HOST || '';
-const _host = _apiHost ? (_apiHost.includes('.') ? _apiHost : `${_apiHost}.onrender.com`) : '';
-const _prodFallback = (typeof window !== 'undefined' && window.location?.hostname?.includes('edu-platform-web'))
-  ? 'https://edu-platform-api-3he9.onrender.com'
-  : '';
-const API_URL = _apiUrl || (_host ? `https://${_host}` : _prodFallback) || 'http://localhost:8000';
+const _origin = typeof window !== 'undefined' ? window.location.origin : '';
+const _sameOrigin = _origin && !_origin.includes('5173') ? _origin : '';
+const API_URL = _apiUrl || _sameOrigin || 'http://localhost:8000';
 const BASE = `${API_URL}/api`;
 export const STATIC_BASE = API_URL;
 
