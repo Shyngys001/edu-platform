@@ -44,6 +44,9 @@ services:
     staticPublishPath: dist
 
     envVars:
+      - key: VITE_API_URL
+        sync: false
+        # Set to your backend URL in Render dashboard, e.g. https://edu-platform-api-3he9.onrender.com
       - key: VITE_API_HOST
         fromService:
           name: edu-platform-api
