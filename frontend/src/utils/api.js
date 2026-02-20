@@ -1,11 +1,11 @@
-// VITE_API_URL = full URL or VITE_API_HOST = host only. Fallback for Render production.
-const _apiHost = import.meta.env.VITE_API_HOST || '';
+// VITE_API_URL = full URL. VITE_API_HOST = host (add .onrender.com if missing)
 const _apiUrl = import.meta.env.VITE_API_URL || '';
-// Render adds random suffix - use VITE_API_URL in Render Environment for reliability
+const _apiHost = import.meta.env.VITE_API_HOST || '';
+const _host = _apiHost ? (_apiHost.includes('.') ? _apiHost : `${_apiHost}.onrender.com`) : '';
 const _prodFallback = (typeof window !== 'undefined' && window.location?.hostname?.includes('edu-platform-web'))
   ? 'https://edu-platform-api-3he9.onrender.com'
   : '';
-const API_URL = _apiUrl || (_apiHost ? `https://${_apiHost}` : _prodFallback) || 'http://localhost:8000';
+const API_URL = _apiUrl || (_host ? `https://${_host}` : _prodFallback) || 'http://localhost:8000';
 const BASE = `${API_URL}/api`;
 export const STATIC_BASE = API_URL;
 

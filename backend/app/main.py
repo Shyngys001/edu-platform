@@ -44,6 +44,23 @@ app.include_router(teacher.router)
 app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
 
 
+@app.on_event("startup")
+def seed_if_empty():
+    """Auto-seed database on first deploy when no users exist."""
+    from app.database import SessionLocal
+    from app.models.models import User
+    db = SessionLocal()
+    try:
+        if db.query(User).count() == 0:
+            import subprocess
+            backend_dir = os.path.dirname(os.path.dirname(__file__))
+            subprocess.run(["python", "seed.py"], cwd=backend_dir, capture_output=True, timeout=60)
+    except Exception:
+        pass  # Don't fail startup if seed errors
+    finally:
+        db.close()
+
+
 @app.get("/api/health")
 def health():
     return {"status": "ok"}
