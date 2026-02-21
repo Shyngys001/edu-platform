@@ -19,7 +19,7 @@ from app.schemas.schemas import (
     LessonCreate, LessonUpdate, ModuleCreate, TestCreate, TestUpdate,
     CodeTaskCreate, CodeTaskUpdate, FeedbackCreate,
     DirectMessageSend, GroupMessageSend,
-    TopicCreate, TopicUpdate, TopicOut,
+    TopicCreate, TopicUpdate, TopicOut, StudentUpdate,
 )
 from app.utils.auth import get_current_user
 
@@ -134,6 +134,41 @@ def student_detail(student_id: int, db: Session = Depends(get_db), user: User = 
         "test_history": test_history,
         "weak_topics": weak_topics,
     }
+
+
+@router.put("/students/{student_id}")
+def update_student(student_id: int, req: StudentUpdate, db: Session = Depends(get_db), user: User = Depends(_teacher)):
+    student = db.query(User).filter(User.id == student_id, User.role == "student").first()
+    if not student:
+        raise HTTPException(404, "Student not found")
+
+    if req.full_name is not None:
+        student.full_name = req.full_name
+    if req.grade is not None:
+        student.grade = req.grade
+    if req.username is not None:
+        # Check username uniqueness
+        existing = db.query(User).filter(User.username == req.username, User.id != student_id).first()
+        if existing:
+            raise HTTPException(409, "Username already taken")
+        student.username = req.username
+    if req.password:
+        from passlib.context import CryptContext
+        pwd_ctx = CryptContext(schemes=["bcrypt"], deprecated="auto")
+        student.hashed_password = pwd_ctx.hash(req.password)
+
+    db.commit()
+    return {"ok": True}
+
+
+@router.delete("/students/{student_id}")
+def delete_student(student_id: int, db: Session = Depends(get_db), user: User = Depends(_teacher)):
+    student = db.query(User).filter(User.id == student_id, User.role == "student").first()
+    if not student:
+        raise HTTPException(404, "Student not found")
+    db.delete(student)
+    db.commit()
+    return {"ok": True}
 
 
 # ── Content Management ─────────────────────────────────

@@ -43,6 +43,13 @@ class UserOut(BaseModel):
         from_attributes = True
 
 
+class StudentUpdate(BaseModel):
+    full_name: Optional[str] = None
+    username: Optional[str] = None
+    grade: Optional[str] = None
+    password: Optional[str] = None  # only updated if provided
+
+
 class UserProfile(UserOut):
     progress_percent: float = 0
     completed_lessons: int = 0

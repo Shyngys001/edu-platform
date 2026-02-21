@@ -157,6 +157,11 @@ const translations = {
 
     // Teacher Students
     studentManagement: 'Student Management',
+    editStudent: 'Edit Student',
+    confirmDeleteStudent: 'Delete this student and all their data? This cannot be undone.',
+    studentDeleted: 'Student deleted',
+    newPassword: 'New Password',
+    leaveBlankToKeep: 'Leave blank to keep current password',
     allGrades: 'All Grades',
     avgTestScore: 'Avg Score',
     weakTopics: 'Weak Topics',
@@ -449,6 +454,11 @@ const translations = {
     date: 'Дата',
 
     studentManagement: 'Управление учениками',
+    editStudent: 'Редактировать ученика',
+    confirmDeleteStudent: 'Удалить ученика и все его данные? Это действие нельзя отменить.',
+    studentDeleted: 'Ученик удалён',
+    newPassword: 'Новый пароль',
+    leaveBlankToKeep: 'Оставьте пустым чтобы не менять пароль',
     allGrades: 'Все классы',
     avgTestScore: 'Ср. балл',
     weakTopics: 'Слабые темы',
@@ -732,6 +742,11 @@ const translations = {
     date: 'Күні',
 
     studentManagement: 'Оқушыларды басқару',
+    editStudent: 'Оқушыны өзгерту',
+    confirmDeleteStudent: 'Оқушы мен оның барлық деректерін жою? Бұл әрекетті болдырмау мүмкін емес.',
+    studentDeleted: 'Оқушы жойылды',
+    newPassword: 'Жаңа құпия сөз',
+    leaveBlankToKeep: 'Бос қалдыру — өзгертпеу',
     allGrades: 'Барлық сыныптар',
     avgTestScore: 'Орт. ұпай',
     weakTopics: 'Әлсіз тақырыптар',
