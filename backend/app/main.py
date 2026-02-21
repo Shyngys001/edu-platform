@@ -6,11 +6,39 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
 
+from sqlalchemy import text
+
 from app.config import settings
 from app.database import engine, Base
 from app.routers import auth, student, teacher
 
-# Create tables
+
+def run_migrations():
+    """Add new columns to existing tables without data loss (SQLite safe)."""
+    migrations = [
+        ("users", "max_unlocked_grade", "INTEGER DEFAULT 6"),
+        ("lessons", "grade", "INTEGER DEFAULT 6"),
+        ("lessons", "topic_id", "INTEGER"),
+        ("tests", "grade", "INTEGER DEFAULT 6"),
+        ("tests", "topic_id", "INTEGER"),
+        ("code_tasks", "grade", "INTEGER DEFAULT 6"),
+        ("code_tasks", "topic_id", "INTEGER"),
+        ("direct_messages", "message_type", "VARCHAR(20) DEFAULT 'text'"),
+        ("direct_messages", "file_url", "VARCHAR(500)"),
+        ("group_messages", "message_type", "VARCHAR(20) DEFAULT 'text'"),
+        ("group_messages", "file_url", "VARCHAR(500)"),
+    ]
+    with engine.connect() as conn:
+        for table, col, definition in migrations:
+            try:
+                conn.execute(text(f"ALTER TABLE {table} ADD COLUMN {col} {definition}"))
+                conn.commit()
+            except Exception:
+                pass  # column already exists
+
+
+# Run migrations then create any new tables
+run_migrations()
 Base.metadata.create_all(bind=engine)
 
 BACKEND_DIR = Path(__file__).resolve().parent.parent

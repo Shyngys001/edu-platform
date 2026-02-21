@@ -1,5 +1,6 @@
 import datetime
 import os
+import re
 import uuid
 from fastapi import APIRouter, Depends, HTTPException, UploadFile, File
 from sqlalchemy.orm import Session
@@ -9,13 +10,13 @@ from app.database import get_db
 from app.models.models import (
     User, Module, Lesson, LessonProgress, Test, Question,
     TestAttempt, CodeTask, CodeAttempt, ChatMessage, Feedback, UserBadge,
-    DirectMessage, GroupMessage,
+    DirectMessage, GroupMessage, Topic,
 )
 from app.schemas.schemas import (
     UserProfile, ModuleOut, LessonOut, ProgressOut, MarkCompleteRequest,
     TestOut, TestSubmit, TestAttemptOut, CodeTaskOut, CodeSubmit,
     CodeAttemptOut, ChatSend, ChatMessageOut, FeedbackOut, BadgeOut,
-    DirectMessageSend, GroupMessageSend,
+    DirectMessageSend, GroupMessageSend, TopicOut,
 )
 from app.utils.auth import get_current_user, require_role
 from app.utils.badges import check_and_award_badges
@@ -28,6 +29,40 @@ def _student(user: User = Depends(get_current_user)):
     if user.role != "student":
         raise HTTPException(403, "Students only")
     return user
+
+
+def parse_grade_num(grade_str) -> int:
+    """Extract number from grade string: '10A' -> 10, '6' -> 6, None -> 6."""
+    m = re.match(r'^(\d+)', str(grade_str or '6'))
+    return int(m.group(1)) if m else 6
+
+
+def _check_grade_unlock(user: User, db: Session):
+    """After completing content, check if current grade is finished → unlock next grade."""
+    student_grade = parse_grade_num(user.grade)
+    max_unlocked = max(user.max_unlocked_grade or 0, student_grade)
+
+    # Calculate completion for current unlock boundary
+    target_grade = max_unlocked
+    lessons = db.query(Lesson).filter(Lesson.grade == target_grade).all()
+    tests = db.query(Test).filter(Test.grade == target_grade).all()
+    total = len(lessons) + len(tests)
+    if total == 0:
+        return
+
+    completed_l = db.query(LessonProgress).filter(
+        LessonProgress.user_id == user.id,
+        LessonProgress.lesson_id.in_([l.id for l in lessons]),
+        LessonProgress.completed == True,
+    ).count()
+    passed_t = db.query(TestAttempt).filter(
+        TestAttempt.user_id == user.id,
+        TestAttempt.test_id.in_([t.id for t in tests]),
+    ).count()
+
+    if (completed_l + passed_t) >= total and target_grade < 11:
+        user.max_unlocked_grade = target_grade + 1
+        db.commit()
 
 
 # ── Profile ────────────────────────────────────────────
@@ -63,22 +98,30 @@ def profile(user: User = Depends(_student), db: Session = Depends(get_db)):
 
 @router.get("/modules")
 def list_modules(db: Session = Depends(get_db), user: User = Depends(_student)):
+    student_grade = parse_grade_num(user.grade)
+    max_unlocked = max(user.max_unlocked_grade or 0, student_grade)
     modules = db.query(Module).order_by(Module.order).all()
     result = []
     for m in modules:
         lessons = []
         for l in m.lessons:
+            # Show lessons for student's grade or unlocked grades
+            lesson_grade = l.grade or 6
+            if lesson_grade > max_unlocked:
+                continue
             prog = db.query(LessonProgress).filter(
                 LessonProgress.user_id == user.id, LessonProgress.lesson_id == l.id
             ).first()
             lessons.append({
                 "id": l.id, "title": l.title, "order": l.order,
+                "grade": lesson_grade, "topic_id": l.topic_id,
                 "completed": prog.completed if prog else False,
             })
-        result.append({
-            "id": m.id, "title": m.title, "order": m.order,
-            "description": m.description, "lessons": lessons,
-        })
+        if lessons:  # only show modules that have accessible lessons
+            result.append({
+                "id": m.id, "title": m.title, "order": m.order,
+                "description": m.description, "lessons": lessons,
+            })
     return result
 
 
@@ -117,15 +160,19 @@ def complete_lesson(req: MarkCompleteRequest, user: User = Depends(_student), db
     prog.time_spent_seconds += req.time_spent_seconds
     db.commit()
 
+    _check_grade_unlock(user, db)
     new_badges = check_and_award_badges(db, user)
-    return {"ok": True, "points": user.points, "new_badges": new_badges}
+    return {"ok": True, "points": user.points, "new_badges": new_badges,
+            "max_unlocked_grade": user.max_unlocked_grade}
 
 
 # ── Tests ──────────────────────────────────────────────
 
 @router.get("/tests")
 def list_tests(db: Session = Depends(get_db), user: User = Depends(_student)):
-    tests = db.query(Test).all()
+    student_grade = parse_grade_num(user.grade)
+    max_unlocked = max(user.max_unlocked_grade or 0, student_grade)
+    tests = db.query(Test).filter(Test.grade <= max_unlocked).all()
     result = []
     for t in tests:
         attempt = db.query(TestAttempt).filter(
@@ -133,6 +180,7 @@ def list_tests(db: Session = Depends(get_db), user: User = Depends(_student)):
         ).order_by(TestAttempt.completed_at.desc()).first()
         result.append({
             "id": t.id, "title": t.title, "difficulty": t.difficulty,
+            "grade": t.grade, "topic_id": t.topic_id,
             "question_count": len(t.questions),
             "best_score": attempt.score if attempt else None,
             "attempted": attempt is not None,
@@ -189,6 +237,7 @@ def submit_test(test_id: int, req: TestSubmit, user: User = Depends(_student), d
     db.commit()
     db.refresh(attempt)
 
+    _check_grade_unlock(user, db)
     check_and_award_badges(db, user)
     return attempt
 
@@ -215,7 +264,9 @@ def test_history(user: User = Depends(_student), db: Session = Depends(get_db)):
 
 @router.get("/tasks")
 def list_tasks(db: Session = Depends(get_db), user: User = Depends(_student)):
-    tasks = db.query(CodeTask).all()
+    student_grade = parse_grade_num(user.grade)
+    max_unlocked = max(user.max_unlocked_grade or 0, student_grade)
+    tasks = db.query(CodeTask).filter(CodeTask.grade <= max_unlocked).all()
     result = []
     for t in tasks:
         best = db.query(CodeAttempt).filter(
@@ -223,6 +274,7 @@ def list_tasks(db: Session = Depends(get_db), user: User = Depends(_student)):
         ).order_by(CodeAttempt.score.desc()).first()
         result.append({
             "id": t.id, "title": t.title, "difficulty": t.difficulty,
+            "grade": t.grade, "topic_id": t.topic_id,
             "description": t.description, "starter_code": t.starter_code,
             "best_score": best.score if best else None,
             "max_score": len(t.test_cases),
@@ -450,6 +502,117 @@ def statistics(user: User = Depends(_student), db: Session = Depends(get_db)):
         "level": user.level,
         "test_scores": test_scores,
         "weak_topics": weak_topics,
+    }
+
+
+# ── Grades & Topics ────────────────────────────────────
+
+@router.get("/grades")
+def grade_statuses(user: User = Depends(_student), db: Session = Depends(get_db)):
+    """Return grade 6-11 unlock status with completion percentage."""
+    student_grade = parse_grade_num(user.grade)
+    max_unlocked = max(user.max_unlocked_grade or 0, student_grade)
+
+    statuses = []
+    for g in range(6, 12):
+        lessons = db.query(Lesson).filter(Lesson.grade == g).all()
+        tests = db.query(Test).filter(Test.grade == g).all()
+        total = len(lessons) + len(tests)
+
+        if total == 0:
+            percent = 0
+        else:
+            completed_l = db.query(LessonProgress).filter(
+                LessonProgress.user_id == user.id,
+                LessonProgress.lesson_id.in_([l.id for l in lessons]),
+                LessonProgress.completed == True,
+            ).count()
+            passed_t = db.query(TestAttempt).filter(
+                TestAttempt.user_id == user.id,
+                TestAttempt.test_id.in_([t.id for t in tests]),
+            ).count()
+            percent = round((completed_l + passed_t) / total * 100)
+
+        if g == student_grade:
+            status = "current"
+        elif g < student_grade or g <= max_unlocked:
+            status = "unlocked"
+        else:
+            status = "locked"
+
+        statuses.append({
+            "grade": g, "status": status,
+            "completion_percent": min(percent, 100),
+            "total_content": total,
+        })
+
+    # Global final: unlocked if all grades 6-11 are 100%
+    all_done = all(s["completion_percent"] >= 100 for s in statuses)
+    statuses.append({
+        "grade": "global_final", "status": "unlocked" if all_done else "locked",
+        "completion_percent": 0, "total_content": 0,
+    })
+
+    return {
+        "current_grade": student_grade,
+        "max_unlocked_grade": max_unlocked,
+        "grades": statuses,
+    }
+
+
+@router.get("/topics")
+def list_topics(user: User = Depends(_student), db: Session = Depends(get_db)):
+    """Return topics for student's accessible grades."""
+    student_grade = parse_grade_num(user.grade)
+    max_unlocked = max(user.max_unlocked_grade or 0, student_grade)
+    topics = db.query(Topic).filter(
+        Topic.grade <= max_unlocked
+    ).order_by(Topic.grade, Topic.order_index).all()
+    return [
+        {
+            "id": t.id, "title": t.title, "description": t.description,
+            "grade": t.grade, "order_index": t.order_index,
+            "is_final": t.is_final, "is_global_final": t.is_global_final,
+        }
+        for t in topics
+    ]
+
+
+@router.get("/topics/{topic_id}")
+def get_topic(topic_id: int, user: User = Depends(_student), db: Session = Depends(get_db)):
+    """Get topic detail with its lessons and tests."""
+    topic = db.query(Topic).filter(Topic.id == topic_id).first()
+    if not topic:
+        raise HTTPException(404, "Topic not found")
+    max_unlocked = user.max_unlocked_grade or parse_grade_num(user.grade)
+    if topic.grade > max_unlocked:
+        raise HTTPException(403, "Grade not unlocked yet")
+
+    lessons = []
+    for l in topic.lessons:
+        prog = db.query(LessonProgress).filter(
+            LessonProgress.user_id == user.id, LessonProgress.lesson_id == l.id
+        ).first()
+        lessons.append({
+            "id": l.id, "title": l.title, "order": l.order,
+            "completed": prog.completed if prog else False,
+        })
+
+    tests = []
+    for t in topic.tests:
+        attempt = db.query(TestAttempt).filter(
+            TestAttempt.user_id == user.id, TestAttempt.test_id == t.id
+        ).first()
+        tests.append({
+            "id": t.id, "title": t.title, "difficulty": t.difficulty,
+            "attempted": attempt is not None,
+        })
+
+    return {
+        "id": topic.id, "title": topic.title, "description": topic.description,
+        "grade": topic.grade, "order_index": topic.order_index,
+        "is_final": topic.is_final, "is_global_final": topic.is_global_final,
+        "lessons": lessons, "tests": tests,
     }
 
 

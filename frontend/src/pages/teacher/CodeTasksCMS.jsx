@@ -2,7 +2,9 @@ import { useState, useEffect } from 'react';
 import { api } from '../../utils/api';
 import { useT } from '../../utils/i18n';
 import toast from 'react-hot-toast';
-import { FiPlus, FiTrash2, FiZap } from 'react-icons/fi';
+import { FiPlus, FiTrash2, FiEdit2, FiZap } from 'react-icons/fi';
+
+const GRADES = [6, 7, 8, 9, 10, 11];
 
 const LANG_OPTIONS = [
   { value: 'ru', label: '🇷🇺 Русский' },
@@ -85,15 +87,21 @@ Output: \`True\``,
   },
 };
 
+const emptyForm = {
+  title: '', description: '', module_id: '', difficulty: 'medium',
+  grade: 6, topic_id: '', starter_code: '',
+};
+
 export default function CodeTasksCMS() {
   const [tasks, setTasks] = useState([]);
   const [modules, setModules] = useState([]);
+  const [topics, setTopics] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [showCreate, setShowCreate] = useState(false);
+  const [filterGrade, setFilterGrade] = useState('');
+  const [showModal, setShowModal] = useState(false);
+  const [editTask, setEditTask] = useState(null);
+  const [form, setForm] = useState(emptyForm);
   const [testCases, setTestCases] = useState([{ input: '', expected_output: '' }]);
-  const [form, setForm] = useState({
-    title: '', description: '', module_id: '', difficulty: 'medium', starter_code: '',
-  });
   const [aiLoading, setAiLoading] = useState(false);
   const [aiLang, setAiLang] = useState('ru');
   const t = useT();
@@ -113,23 +121,56 @@ export default function CodeTasksCMS() {
     }
   }
 
+  async function loadTopicsForGrade(grade) {
+    try {
+      const data = await api.get(`/teacher/topics?grade=${grade}`);
+      setTopics(data);
+    } catch { setTopics([]); }
+  }
+
+  function openCreate() {
+    setEditTask(null);
+    setForm(emptyForm);
+    setTestCases([{ input: '', expected_output: '' }]);
+    loadTopicsForGrade(6);
+    setShowModal(true);
+  }
+
+  async function openEdit(taskId) {
+    try {
+      const data = await api.get(`/teacher/code-tasks/${taskId}`);
+      setEditTask(data);
+      setForm({
+        title: data.title,
+        description: data.description,
+        module_id: data.module_id || '',
+        difficulty: data.difficulty,
+        grade: data.grade || 6,
+        topic_id: data.topic_id || '',
+        starter_code: data.starter_code || '',
+      });
+      setTestCases(data.test_cases && data.test_cases.length > 0
+        ? data.test_cases
+        : [{ input: '', expected_output: '' }]);
+      loadTopicsForGrade(data.grade || 6);
+      setShowModal(true);
+    } catch (e) {
+      toast.error(e.message);
+    }
+  }
+
   function applyTemplate(key) {
     const tpl = TEMPLATES[key];
     if (!tpl) return;
-    setForm({
+    setForm(f => ({
+      ...f,
       title: tpl.title,
       description: tpl.description,
-      module_id: '',
       difficulty: tpl.difficulty,
       starter_code: tpl.starter_code,
-    });
+    }));
     setTestCases([...tpl.test_cases]);
     toast.success(`Template "${key}" applied`);
-  }
-
-  function resetForm() {
-    setForm({ title: '', description: '', module_id: '', difficulty: 'medium', starter_code: '' });
-    setTestCases([{ input: '', expected_output: '' }]);
   }
 
   function updateTestCase(i, field, val) {
@@ -152,7 +193,6 @@ export default function CodeTasksCMS() {
         difficulty: form.difficulty,
         lang: aiLang,
       });
-      // AI fills ALL fields
       setForm(f => ({
         ...f,
         title: data.title || f.title,
@@ -170,25 +210,32 @@ export default function CodeTasksCMS() {
     }
   }
 
-  async function handleCreate(e) {
+  async function handleSave(e) {
     e.preventDefault();
     const validCases = testCases.filter(tc => tc.expected_output.trim());
     if (validCases.length === 0) {
       toast.error('Add at least one test case with expected output');
       return;
     }
+    const payload = {
+      title: form.title,
+      description: form.description,
+      module_id: form.module_id ? parseInt(form.module_id) : null,
+      difficulty: form.difficulty,
+      grade: parseInt(form.grade),
+      topic_id: form.topic_id ? parseInt(form.topic_id) : null,
+      starter_code: form.starter_code,
+      test_cases: validCases,
+    };
     try {
-      await api.post('/teacher/code-tasks', {
-        title: form.title,
-        description: form.description,
-        module_id: form.module_id ? parseInt(form.module_id) : null,
-        difficulty: form.difficulty,
-        starter_code: form.starter_code,
-        test_cases: validCases,
-      });
-      toast.success('Task created');
-      setShowCreate(false);
-      resetForm();
+      if (editTask) {
+        await api.put(`/teacher/code-tasks/${editTask.id}`, payload);
+        toast.success(t('saved'));
+      } else {
+        await api.post('/teacher/code-tasks', payload);
+        toast.success(t('created'));
+      }
+      setShowModal(false);
       load();
     } catch (e) {
       toast.error(e.message);
@@ -206,116 +253,173 @@ export default function CodeTasksCMS() {
     }
   }
 
+  const filteredTasks = filterGrade
+    ? tasks.filter(tk => tk.grade === parseInt(filterGrade))
+    : tasks;
+
   if (loading) return <div className="loading"><div className="spinner" /></div>;
 
   return (
     <div>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 }}>
-        <h1>{t('codeTasksTitle')}</h1>
-        <button className="btn btn-primary" onClick={() => { resetForm(); setShowCreate(true); }}><FiPlus /> {t('newTask')}</button>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
+        <div>
+          <h1 style={{ fontSize: '1.6rem', fontWeight: 700 }}>{t('codeTasksTitle')}</h1>
+          <p style={{ color: 'var(--text-secondary)', marginTop: 4 }}>{t('grade6to11')}</p>
+        </div>
+        <button className="btn btn-primary" onClick={openCreate}><FiPlus /> {t('newTask')}</button>
+      </div>
+
+      {/* Grade Filter */}
+      <div style={{ display: 'flex', gap: 8, marginBottom: 20, flexWrap: 'wrap' }}>
+        <button
+          className={`btn btn-sm ${!filterGrade ? 'btn-primary' : 'btn-secondary'}`}
+          onClick={() => setFilterGrade('')}
+        >
+          {t('allGrades')}
+        </button>
+        {GRADES.map(g => (
+          <button
+            key={g}
+            className={`btn btn-sm ${filterGrade == g ? 'btn-primary' : 'btn-secondary'}`}
+            onClick={() => setFilterGrade(g)}
+          >
+            {t('gradeLabel')} {g}
+            <span style={{ marginLeft: 6, fontSize: '0.7rem', opacity: 0.7 }}>
+              ({tasks.filter(tk => tk.grade === g).length})
+            </span>
+          </button>
+        ))}
       </div>
 
       <div className="card" style={{ padding: 0, overflow: 'hidden' }}>
         <div className="table-wrap">
           <table>
-            <thead><tr><th>Title</th><th>{t('difficulty')}</th><th>{t('testCases')}</th><th>{t('actions')}</th></tr></thead>
+            <thead>
+              <tr>
+                <th>Title</th>
+                <th>{t('gradeLabel')}</th>
+                <th>{t('difficulty')}</th>
+                <th>{t('testCases')}</th>
+                <th>{t('actions')}</th>
+              </tr>
+            </thead>
             <tbody>
-              {tasks.map(tk => (
+              {filteredTasks.map(tk => (
                 <tr key={tk.id}>
                   <td style={{ fontWeight: 600 }}>{tk.title}</td>
-                  <td><span className={`badge badge-${tk.difficulty === 'easy' ? 'success' : tk.difficulty === 'hard' ? 'danger' : 'warning'}`}>{t(tk.difficulty)}</span></td>
+                  <td>
+                    <span className="badge badge-primary">{t('gradeLabel')} {tk.grade || 6}</span>
+                  </td>
+                  <td>
+                    <span className={`badge badge-${tk.difficulty === 'easy' ? 'success' : tk.difficulty === 'hard' ? 'danger' : 'warning'}`}>
+                      {t(tk.difficulty)}
+                    </span>
+                  </td>
                   <td>{tk.test_case_count}</td>
-                  <td><button className="btn btn-danger btn-sm" onClick={() => handleDelete(tk.id)}><FiTrash2 /></button></td>
+                  <td>
+                    <div style={{ display: 'flex', gap: 8 }}>
+                      <button className="btn btn-secondary btn-sm" onClick={() => openEdit(tk.id)} title={t('edit')}>
+                        <FiEdit2 />
+                      </button>
+                      <button className="btn btn-danger btn-sm" onClick={() => handleDelete(tk.id)}>
+                        <FiTrash2 />
+                      </button>
+                    </div>
+                  </td>
                 </tr>
               ))}
             </tbody>
           </table>
         </div>
-        {tasks.length === 0 && <div className="empty-state"><p>{t('noData')}</p></div>}
+        {filteredTasks.length === 0 && <div className="empty-state"><p>{t('noData')}</p></div>}
       </div>
 
-      {showCreate && (
-        <div className="modal-overlay" onClick={() => setShowCreate(false)}>
+      {/* Create / Edit Modal */}
+      {showModal && (
+        <div className="modal-overlay" onClick={() => setShowModal(false)}>
           <div className="modal" onClick={e => e.stopPropagation()} style={{ maxWidth: 720 }}>
-            <h2>{t('createCodeTask')}</h2>
+            <h2>{editTask ? t('editTask') : t('createCodeTask')}</h2>
 
-            {/* AI Generate Block */}
-            <div style={{ background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)', padding: 16, borderRadius: 12, marginBottom: 20, color: 'white' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
-                <div>
-                  <strong style={{ fontSize: '1rem' }}>{t('aiGenerateTask')}</strong>
-                  <p style={{ fontSize: '0.8rem', opacity: 0.9, margin: '4px 0 0' }}>{t('aiGenerateTaskDesc')}</p>
+            {/* AI Generate Block — only for create */}
+            {!editTask && (
+              <div style={{ background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)', padding: 16, borderRadius: 12, marginBottom: 20, color: 'white' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
+                  <div>
+                    <strong style={{ fontSize: '1rem' }}>{t('aiGenerateTask')}</strong>
+                    <p style={{ fontSize: '0.8rem', opacity: 0.9, margin: '4px 0 0' }}>{t('aiGenerateTaskDesc')}</p>
+                  </div>
+                  <button
+                    type="button"
+                    className="btn"
+                    onClick={handleAIGenerate}
+                    disabled={aiLoading}
+                    style={{ background: 'white', color: '#764ba2', fontWeight: 700, display: 'flex', alignItems: 'center', gap: 6, whiteSpace: 'nowrap' }}
+                  >
+                    {aiLoading ? <div className="spinner" style={{ width: 16, height: 16 }} /> : <FiZap />}
+                    {aiLoading ? t('generating') : t('generate')}
+                  </button>
                 </div>
-                <button
-                  type="button"
-                  className="btn"
-                  onClick={handleAIGenerate}
-                  disabled={aiLoading}
-                  style={{ background: 'white', color: '#764ba2', fontWeight: 700, display: 'flex', alignItems: 'center', gap: 6, whiteSpace: 'nowrap' }}
-                >
-                  {aiLoading ? <div className="spinner" style={{ width: 16, height: 16 }} /> : <FiZap />}
-                  {aiLoading ? t('generating') : t('generate')}
-                </button>
+                <div style={{ display: 'flex', gap: 6 }}>
+                  {LANG_OPTIONS.map(lo => (
+                    <button
+                      key={lo.value}
+                      type="button"
+                      onClick={() => setAiLang(lo.value)}
+                      style={{
+                        padding: '4px 12px', borderRadius: 6, border: 'none', cursor: 'pointer',
+                        fontSize: '0.8rem', fontWeight: 600,
+                        background: aiLang === lo.value ? 'white' : 'rgba(255,255,255,0.2)',
+                        color: aiLang === lo.value ? '#764ba2' : 'white',
+                        transition: 'all 0.2s',
+                      }}
+                    >
+                      {lo.label}
+                    </button>
+                  ))}
+                </div>
               </div>
-              {/* Language selector */}
-              <div style={{ display: 'flex', gap: 6 }}>
-                {LANG_OPTIONS.map(lo => (
-                  <button
-                    key={lo.value}
-                    type="button"
-                    onClick={() => setAiLang(lo.value)}
-                    style={{
-                      padding: '4px 12px', borderRadius: 6, border: 'none', cursor: 'pointer',
-                      fontSize: '0.8rem', fontWeight: 600,
-                      background: aiLang === lo.value ? 'white' : 'rgba(255,255,255,0.2)',
-                      color: aiLang === lo.value ? '#764ba2' : 'white',
-                      transition: 'all 0.2s',
-                    }}
-                  >
-                    {lo.label}
-                  </button>
-                ))}
-              </div>
-            </div>
+            )}
 
-            {/* Template selector */}
-            <div style={{ marginBottom: 20 }}>
-              <label style={{ fontSize: '0.85rem', fontWeight: 600, marginBottom: 8, display: 'block' }}>{t('useTemplate')}</label>
-              <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-                {[
-                  { key: 'basic', label: t('templateBasic'), icon: '📥' },
-                  { key: 'string', label: t('templateString'), icon: '🔤' },
-                  { key: 'list', label: t('templateList'), icon: '📋' },
-                  { key: 'math', label: t('templateMath'), icon: '🔢' },
-                ].map(tpl => (
-                  <button
-                    key={tpl.key}
-                    type="button"
-                    className="btn btn-secondary btn-sm"
-                    onClick={() => applyTemplate(tpl.key)}
-                    style={{ display: 'flex', alignItems: 'center', gap: 6 }}
-                  >
-                    <span>{tpl.icon}</span> {tpl.label}
-                  </button>
-                ))}
+            {/* Templates — only for create */}
+            {!editTask && (
+              <div style={{ marginBottom: 20 }}>
+                <label style={{ fontSize: '0.85rem', fontWeight: 600, marginBottom: 8, display: 'block' }}>{t('useTemplate')}</label>
+                <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                  {[
+                    { key: 'basic', label: t('templateBasic'), icon: '📥' },
+                    { key: 'string', label: t('templateString'), icon: '🔤' },
+                    { key: 'list', label: t('templateList'), icon: '📋' },
+                    { key: 'math', label: t('templateMath'), icon: '🔢' },
+                  ].map(tpl => (
+                    <button
+                      key={tpl.key}
+                      type="button"
+                      className="btn btn-secondary btn-sm"
+                      onClick={() => applyTemplate(tpl.key)}
+                      style={{ display: 'flex', alignItems: 'center', gap: 6 }}
+                    >
+                      <span>{tpl.icon}</span> {tpl.label}
+                    </button>
+                  ))}
+                </div>
               </div>
-            </div>
+            )}
 
-            <form onSubmit={handleCreate}>
-              <div className="form-group">
-                <label>Title</label>
-                <input className="form-input" value={form.title} onChange={e => setForm(f => ({ ...f, title: e.target.value }))} required />
-              </div>
-              <div className="form-group">
-                <label>{t('description')}</label>
-                <textarea className="form-input" value={form.description} onChange={e => setForm(f => ({ ...f, description: e.target.value }))} rows={5} required />
-              </div>
+            <form onSubmit={handleSave}>
+              {/* Grade + Difficulty */}
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
                 <div className="form-group">
-                  <label>{t('module')}</label>
-                  <select className="form-input" value={form.module_id} onChange={e => setForm(f => ({ ...f, module_id: e.target.value }))}>
-                    <option value="">—</option>
-                    {modules.map(m => <option key={m.id} value={m.id}>{m.title}</option>)}
+                  <label>{t('gradeLabel')} *</label>
+                  <select
+                    className="form-input"
+                    value={form.grade}
+                    onChange={e => {
+                      const g = parseInt(e.target.value);
+                      setForm(f => ({ ...f, grade: g, topic_id: '' }));
+                      loadTopicsForGrade(g);
+                    }}
+                  >
+                    {GRADES.map(g => <option key={g} value={g}>{t('gradeLabel')} {g}</option>)}
                   </select>
                 </div>
                 <div className="form-group">
@@ -327,24 +431,53 @@ export default function CodeTasksCMS() {
                   </select>
                 </div>
               </div>
+
+              {/* Topic + Module */}
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+                <div className="form-group">
+                  <label>{t('topic')}</label>
+                  <select
+                    className="form-input"
+                    value={form.topic_id}
+                    onChange={e => setForm(f => ({ ...f, topic_id: e.target.value }))}
+                  >
+                    <option value="">{t('noTopic')}</option>
+                    {topics.map(tp => <option key={tp.id} value={tp.id}>{tp.title}</option>)}
+                  </select>
+                </div>
+                <div className="form-group">
+                  <label>{t('module')}</label>
+                  <select className="form-input" value={form.module_id} onChange={e => setForm(f => ({ ...f, module_id: e.target.value }))}>
+                    <option value="">—</option>
+                    {modules.map(m => <option key={m.id} value={m.id}>{m.title}</option>)}
+                  </select>
+                </div>
+              </div>
+
+              <div className="form-group">
+                <label>Title *</label>
+                <input className="form-input" value={form.title} onChange={e => setForm(f => ({ ...f, title: e.target.value }))} required />
+              </div>
+              <div className="form-group">
+                <label>{t('description')}</label>
+                <textarea className="form-input" value={form.description} onChange={e => setForm(f => ({ ...f, description: e.target.value }))} rows={5} required />
+              </div>
               <div className="form-group">
                 <label>{t('starterCode')}</label>
                 <textarea className="form-input" value={form.starter_code} onChange={e => setForm(f => ({ ...f, starter_code: e.target.value }))} rows={3} style={{ fontFamily: 'monospace', fontSize: '0.85rem' }} />
               </div>
 
-              {/* Visual test case editor */}
+              {/* Test cases */}
               <div style={{ marginBottom: 16 }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
                   <label style={{ fontSize: '0.85rem', fontWeight: 600 }}>{t('testCases')} ({testCases.length})</label>
                   <button type="button" className="btn btn-secondary btn-sm" onClick={addTestCase}><FiPlus /> {t('addCase')}</button>
                 </div>
-
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
                   {testCases.map((tc, i) => (
                     <div key={i} style={{
                       display: 'grid', gridTemplateColumns: '1fr 1fr auto', gap: 8,
-                      padding: 12, background: 'var(--bg)', borderRadius: 8,
-                      alignItems: 'start',
+                      padding: 12, background: 'var(--bg)', borderRadius: 8, alignItems: 'start',
                     }}>
                       <div>
                         <span style={{ fontSize: '0.7rem', color: 'var(--text-secondary)', textTransform: 'uppercase' }}>{t('input')}</span>
@@ -383,8 +516,10 @@ export default function CodeTasksCMS() {
               </div>
 
               <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
-                <button type="button" className="btn btn-secondary" onClick={() => setShowCreate(false)}>{t('cancel')}</button>
-                <button type="submit" className="btn btn-primary">{t('create')}</button>
+                <button type="button" className="btn btn-secondary" onClick={() => setShowModal(false)}>{t('cancel')}</button>
+                <button type="submit" className="btn btn-primary">
+                  {editTask ? t('save') : t('create')}
+                </button>
               </div>
             </form>
           </div>

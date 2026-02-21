@@ -10,13 +10,17 @@ const LANG_OPTIONS = [
   { value: 'kz', label: '🇰🇿 Қазақша' },
 ];
 
+const GRADES = [6, 7, 8, 9, 10, 11];
+
 export default function TestsCMS() {
   const [tests, setTests] = useState([]);
   const [modules, setModules] = useState([]);
+  const [topics, setTopics] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showCreate, setShowCreate] = useState(false);
+  const [editTest, setEditTest] = useState(null); // test being edited
   const [viewTest, setViewTest] = useState(null);
-  const [form, setForm] = useState({ title: '', module_id: '', difficulty: 'medium', questions: [] });
+  const [form, setForm] = useState({ title: '', module_id: '', difficulty: 'medium', grade: 6, topic_id: '', questions: [] });
   const [newQ, setNewQ] = useState({ question_type: 'mcq', text: '', options: ['', '', '', ''], correct_answer: '', explanation: '' });
   const [aiLoading, setAiLoading] = useState(false);
   const [aiLang, setAiLang] = useState('ru');
@@ -28,13 +32,42 @@ export default function TestsCMS() {
   async function load() {
     setLoading(true);
     try {
-      const [t, m] = await Promise.all([api.get('/teacher/tests'), api.get('/teacher/modules')]);
-      setTests(t);
-      setModules(m);
+      const [testsData, modulesData, topicsData] = await Promise.all([
+        api.get('/teacher/tests'),
+        api.get('/teacher/modules'),
+        api.get('/teacher/topics'),
+      ]);
+      setTests(testsData);
+      setModules(modulesData);
+      setTopics(topicsData);
     } catch (e) {
       toast.error(e.message);
     } finally {
       setLoading(false);
+    }
+  }
+
+  async function loadTopicsForGrade(grade) {
+    try {
+      const tp = await api.get(`/teacher/topics?grade=${grade}`);
+      setTopics(tp);
+    } catch {}
+  }
+
+  async function openEditTest(testId) {
+    try {
+      const testData = await api.get(`/teacher/tests/${testId}`);
+      setEditTest(testData);
+      setForm({
+        title: testData.title, module_id: testData.module_id || '',
+        difficulty: testData.difficulty, grade: testData.grade || 6,
+        topic_id: testData.topic_id || '', questions: testData.questions,
+      });
+      loadTopicsForGrade(testData.grade || 6);
+      setEditingQ(null);
+      setShowCreate(true);
+    } catch (e) {
+      toast.error(e.message);
     }
   }
 
@@ -109,21 +142,38 @@ export default function TestsCMS() {
       toast.error('Add at least one question');
       return;
     }
+    const payload = {
+      ...form,
+      module_id: form.module_id ? parseInt(form.module_id) : null,
+      grade: parseInt(form.grade),
+      topic_id: form.topic_id ? parseInt(form.topic_id) : null,
+    };
     try {
-      await api.post('/teacher/tests', {
-        ...form,
-        module_id: form.module_id ? parseInt(form.module_id) : null,
-      });
-      toast.success('Test created');
+      if (editTest) {
+        const result = await api.put(`/teacher/tests/${editTest.id}`, payload);
+        if (result.attempts_preserved) {
+          toast.success(`Test updated. Questions kept (${result.attempt_count} attempts exist)`);
+        } else {
+          toast.success('Test updated');
+        }
+      } else {
+        await api.post('/teacher/tests', payload);
+        toast.success('Test created');
+      }
       setShowCreate(false);
-      setForm({ title: '', module_id: '', difficulty: 'medium', questions: [] });
+      setEditTest(null);
+      setForm({ title: '', module_id: '', difficulty: 'medium', grade: 6, topic_id: '', questions: [] });
       load();
     } catch (e) {
       toast.error(e.message);
     }
   }
 
-  async function handleDelete(id) {
+  async function handleDelete(id, attemptCount) {
+    if (attemptCount > 0) {
+      toast.error(`Cannot delete: ${attemptCount} student attempt(s) exist. Edit instead.`);
+      return;
+    }
     if (!confirm('Delete this test?')) return;
     try {
       await api.delete(`/teacher/tests/${id}`);
@@ -149,25 +199,32 @@ export default function TestsCMS() {
     <div>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 }}>
         <h1>{t('testsTitle')}</h1>
-        <button className="btn btn-primary" onClick={() => { setForm({ title: '', module_id: '', difficulty: 'medium', questions: [] }); setEditingQ(null); setShowCreate(true); }}><FiPlus /> {t('newTest')}</button>
+        <button className="btn btn-primary" onClick={() => { setEditTest(null); setForm({ title: '', module_id: '', difficulty: 'medium', grade: 6, topic_id: '', questions: [] }); setEditingQ(null); setShowCreate(true); }}><FiPlus /> {t('newTest')}</button>
       </div>
 
       <div className="card" style={{ padding: 0, overflow: 'hidden' }}>
         <div className="table-wrap">
           <table>
             <thead>
-              <tr><th>Title</th><th>{t('difficulty')}</th><th>{t('questions')}</th><th>{t('actions')}</th></tr>
+              <tr><th>Title</th><th>{t('gradeLabel')}</th><th>{t('difficulty')}</th><th>{t('questions')}</th><th>{t('actions')}</th></tr>
             </thead>
             <tbody>
-              {tests.map(t => (
-                <tr key={t.id}>
-                  <td style={{ fontWeight: 600 }}>{t.title}</td>
-                  <td><span className={`badge badge-${t.difficulty === 'easy' ? 'success' : t.difficulty === 'hard' ? 'danger' : 'warning'}`}>{t.difficulty}</span></td>
-                  <td>{t.question_count}</td>
+              {tests.map(tt => (
+                <tr key={tt.id}>
+                  <td style={{ fontWeight: 600 }}>{tt.title}</td>
+                  <td><span className="badge badge-primary">{t('gradeLabel')} {tt.grade || 6}</span></td>
+                  <td><span className={`badge badge-${tt.difficulty === 'easy' ? 'success' : tt.difficulty === 'hard' ? 'danger' : 'warning'}`}>{tt.difficulty}</span></td>
+                  <td>{tt.question_count}</td>
                   <td>
                     <div style={{ display: 'flex', gap: 4 }}>
-                      <button className="btn btn-secondary btn-sm" onClick={() => handleView(t.id)}><FiEye /></button>
-                      <button className="btn btn-danger btn-sm" onClick={() => handleDelete(t.id)}><FiTrash2 /></button>
+                      <button className="btn btn-secondary btn-sm" onClick={() => handleView(tt.id)}><FiEye /></button>
+                      <button className="btn btn-secondary btn-sm" onClick={() => openEditTest(tt.id)} title={t('edit')}><FiEdit2 /></button>
+                      <button
+                        className="btn btn-danger btn-sm"
+                        onClick={() => handleDelete(tt.id, tt.attempt_count || 0)}
+                        title={tt.attempt_count > 0 ? `${tt.attempt_count} attempts` : t('delete')}
+                        style={{ opacity: tt.attempt_count > 0 ? 0.5 : 1 }}
+                      ><FiTrash2 /></button>
                     </div>
                   </td>
                 </tr>
@@ -197,9 +254,9 @@ export default function TestsCMS() {
 
       {/* Create Test Modal */}
       {showCreate && (
-        <div className="modal-overlay" onClick={() => setShowCreate(false)}>
+        <div className="modal-overlay" onClick={() => { setShowCreate(false); setEditTest(null); }}>
           <div className="modal" onClick={e => e.stopPropagation()} style={{ maxWidth: 750, maxHeight: '90vh', overflowY: 'auto' }}>
-            <h2>{t('createTest')}</h2>
+            <h2>{editTest ? t('editTest') : t('createTest')}</h2>
 
             {/* AI Generate Block */}
             <div style={{ background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)', padding: 16, borderRadius: 12, marginBottom: 20, color: 'white' }}>
@@ -251,6 +308,35 @@ export default function TestsCMS() {
                     <option value="easy">{t('easy')}</option>
                     <option value="medium">{t('medium')}</option>
                     <option value="hard">{t('hard')}</option>
+                  </select>
+                </div>
+              </div>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+                <div className="form-group">
+                  <label>{t('gradeLabel')}</label>
+                  <select
+                    className="form-input"
+                    value={form.grade}
+                    onChange={e => {
+                      const g = parseInt(e.target.value);
+                      setForm(f => ({ ...f, grade: g, topic_id: '' }));
+                      loadTopicsForGrade(g);
+                    }}
+                  >
+                    {GRADES.map(g => <option key={g} value={g}>{t('gradeLabel')} {g}</option>)}
+                  </select>
+                </div>
+                <div className="form-group">
+                  <label>{t('topic')}</label>
+                  <select
+                    className="form-input"
+                    value={form.topic_id}
+                    onChange={e => setForm(f => ({ ...f, topic_id: e.target.value }))}
+                  >
+                    <option value="">— {t('noTopic')} —</option>
+                    {topics.filter(tp => tp.grade === form.grade).map(tp => (
+                      <option key={tp.id} value={tp.id}>{tp.title}</option>
+                    ))}
                   </select>
                 </div>
               </div>
@@ -418,8 +504,8 @@ export default function TestsCMS() {
               </div>
 
               <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
-                <button type="button" className="btn btn-secondary" onClick={() => setShowCreate(false)}>{t('cancel')}</button>
-                <button type="submit" className="btn btn-primary">{t('create')}</button>
+                <button type="button" className="btn btn-secondary" onClick={() => { setShowCreate(false); setEditTest(null); }}>{t('cancel')}</button>
+                <button type="submit" className="btn btn-primary">{editTest ? t('update') : t('create')}</button>
               </div>
             </form>
           </div>

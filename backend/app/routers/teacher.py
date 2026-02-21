@@ -13,12 +13,13 @@ from app.database import get_db
 from app.models.models import (
     User, Module, Lesson, LessonProgress, Test, Question,
     TestAttempt, CodeTask, CodeAttempt, Feedback,
-    DirectMessage, GroupMessage,
+    DirectMessage, GroupMessage, Topic,
 )
 from app.schemas.schemas import (
-    LessonCreate, LessonUpdate, ModuleCreate, TestCreate,
-    CodeTaskCreate, FeedbackCreate,
+    LessonCreate, LessonUpdate, ModuleCreate, TestCreate, TestUpdate,
+    CodeTaskCreate, CodeTaskUpdate, FeedbackCreate,
     DirectMessageSend, GroupMessageSend,
+    TopicCreate, TopicUpdate, TopicOut,
 )
 from app.utils.auth import get_current_user
 
@@ -167,6 +168,7 @@ def list_lessons(db: Session = Depends(get_db), user: User = Depends(_teacher)):
             "id": l.id, "title": l.title, "module_id": l.module_id,
             "order": l.order, "content": l.content or "",
             "image_url": l.image_url, "video_url": l.video_url,
+            "grade": l.grade or 6, "topic_id": l.topic_id,
         }
         for l in lessons
     ]
@@ -210,8 +212,10 @@ def list_tests(db: Session = Depends(get_db), user: User = Depends(_teacher)):
     return [
         {
             "id": t.id, "title": t.title, "difficulty": t.difficulty,
-            "module_id": t.module_id, "question_count": len(t.questions),
+            "module_id": t.module_id, "grade": t.grade or 6, "topic_id": t.topic_id,
+            "question_count": len(t.questions),
             "deadline": t.deadline.isoformat() if t.deadline else None,
+            "attempt_count": len(t.attempts),
         }
         for t in tests
     ]
@@ -219,7 +223,10 @@ def list_tests(db: Session = Depends(get_db), user: User = Depends(_teacher)):
 
 @router.post("/tests")
 def create_test(req: TestCreate, db: Session = Depends(get_db), user: User = Depends(_teacher)):
-    test = Test(title=req.title, module_id=req.module_id, difficulty=req.difficulty, deadline=req.deadline)
+    test = Test(
+        title=req.title, module_id=req.module_id, difficulty=req.difficulty,
+        grade=req.grade, topic_id=req.topic_id, deadline=req.deadline,
+    )
     db.add(test)
     db.flush()
     for q in req.questions:
@@ -236,7 +243,7 @@ def get_test_detail(test_id: int, db: Session = Depends(get_db), user: User = De
         raise HTTPException(404, "Test not found")
     return {
         "id": test.id, "title": test.title, "difficulty": test.difficulty,
-        "module_id": test.module_id,
+        "module_id": test.module_id, "grade": test.grade or 6, "topic_id": test.topic_id,
         "deadline": test.deadline.isoformat() if test.deadline else None,
         "questions": [
             {
@@ -249,11 +256,41 @@ def get_test_detail(test_id: int, db: Session = Depends(get_db), user: User = De
     }
 
 
+@router.put("/tests/{test_id}")
+def update_test(test_id: int, req: TestUpdate, db: Session = Depends(get_db), user: User = Depends(_teacher)):
+    test = db.query(Test).filter(Test.id == test_id).first()
+    if not test:
+        raise HTTPException(404, "Test not found")
+
+    attempt_count = db.query(TestAttempt).filter(TestAttempt.test_id == test_id).count()
+
+    # Update scalar fields
+    for field in ("title", "module_id", "difficulty", "grade", "topic_id", "deadline"):
+        val = getattr(req, field, None)
+        if val is not None:
+            setattr(test, field, val)
+
+    # Replace questions only if no student attempts yet
+    if req.questions is not None:
+        if attempt_count > 0:
+            db.commit()
+            return {"ok": True, "attempts_preserved": True, "attempt_count": attempt_count}
+        db.query(Question).filter(Question.test_id == test_id).delete()
+        for q in req.questions:
+            db.add(Question(test_id=test_id, **q.model_dump()))
+
+    db.commit()
+    return {"ok": True, "attempts_preserved": False}
+
+
 @router.delete("/tests/{test_id}")
 def delete_test(test_id: int, db: Session = Depends(get_db), user: User = Depends(_teacher)):
     test = db.query(Test).filter(Test.id == test_id).first()
     if not test:
         raise HTTPException(404, "Test not found")
+    attempt_count = db.query(TestAttempt).filter(TestAttempt.test_id == test_id).count()
+    if attempt_count > 0:
+        raise HTTPException(409, f"Cannot delete test: {attempt_count} student attempt(s) exist. Edit the test instead.")
     db.delete(test)
     db.commit()
     return {"ok": True}
@@ -267,7 +304,8 @@ def list_code_tasks(db: Session = Depends(get_db), user: User = Depends(_teacher
     return [
         {
             "id": t.id, "title": t.title, "difficulty": t.difficulty,
-            "module_id": t.module_id, "test_case_count": len(t.test_cases),
+            "module_id": t.module_id, "grade": t.grade or 6, "topic_id": t.topic_id,
+            "test_case_count": len(t.test_cases),
         }
         for t in tasks
     ]
@@ -280,6 +318,76 @@ def create_code_task(req: CodeTaskCreate, db: Session = Depends(get_db), user: U
     db.commit()
     db.refresh(task)
     return {"id": task.id, "title": task.title}
+
+
+@router.get("/code-tasks/{task_id}")
+def get_code_task(task_id: int, db: Session = Depends(get_db), user: User = Depends(_teacher)):
+    task = db.query(CodeTask).filter(CodeTask.id == task_id).first()
+    if not task:
+        raise HTTPException(404, "Task not found")
+    return {
+        "id": task.id, "title": task.title, "description": task.description,
+        "module_id": task.module_id, "difficulty": task.difficulty,
+        "grade": task.grade or 6, "topic_id": task.topic_id,
+        "starter_code": task.starter_code or "",
+        "test_cases": task.test_cases or [],
+        "deadline": task.deadline.isoformat() if task.deadline else None,
+    }
+
+
+@router.put("/code-tasks/{task_id}")
+def update_code_task(task_id: int, req: CodeTaskUpdate, db: Session = Depends(get_db), user: User = Depends(_teacher)):
+    task = db.query(CodeTask).filter(CodeTask.id == task_id).first()
+    if not task:
+        raise HTTPException(404, "Task not found")
+    for field, val in req.model_dump(exclude_unset=True).items():
+        setattr(task, field, val)
+    db.commit()
+    return {"ok": True}
+
+
+# ── Topics Management ──────────────────────────────────
+
+@router.get("/topics", response_model=list[TopicOut])
+def list_topics(grade: int = None, db: Session = Depends(get_db), user: User = Depends(_teacher)):
+    q = db.query(Topic)
+    if grade is not None:
+        q = q.filter(Topic.grade == grade)
+    return q.order_by(Topic.grade, Topic.order_index).all()
+
+
+@router.post("/topics", response_model=TopicOut)
+def create_topic(req: TopicCreate, db: Session = Depends(get_db), user: User = Depends(_teacher)):
+    topic = Topic(**req.model_dump())
+    db.add(topic)
+    db.commit()
+    db.refresh(topic)
+    return topic
+
+
+@router.put("/topics/{topic_id}", response_model=TopicOut)
+def update_topic(topic_id: int, req: TopicUpdate, db: Session = Depends(get_db), user: User = Depends(_teacher)):
+    topic = db.query(Topic).filter(Topic.id == topic_id).first()
+    if not topic:
+        raise HTTPException(404, "Topic not found")
+    for key, val in req.model_dump(exclude_unset=True).items():
+        setattr(topic, key, val)
+    db.commit()
+    db.refresh(topic)
+    return topic
+
+
+@router.delete("/topics/{topic_id}")
+def delete_topic(topic_id: int, db: Session = Depends(get_db), user: User = Depends(_teacher)):
+    topic = db.query(Topic).filter(Topic.id == topic_id).first()
+    if not topic:
+        raise HTTPException(404, "Topic not found")
+    lesson_count = db.query(Lesson).filter(Lesson.topic_id == topic_id).count()
+    if lesson_count > 0:
+        raise HTTPException(409, f"Cannot delete topic: {lesson_count} lesson(s) attached. Reassign them first.")
+    db.delete(topic)
+    db.commit()
+    return {"ok": True}
 
 
 @router.delete("/code-tasks/{task_id}")

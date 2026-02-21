@@ -41,6 +41,7 @@ class User(Base):
     last_login = Column(DateTime, nullable=True)
     streak_days = Column(Integer, default=0)
     last_activity_date = Column(String(10), nullable=True)
+    max_unlocked_grade = Column(Integer, default=6)
 
     # relationships
     progress = relationship("LessonProgress", back_populates="user", cascade="all,delete")
@@ -60,6 +61,23 @@ class User(Base):
         if self.points >= 200:
             return "Intermediate"
         return "Beginner"
+
+
+# ── Topics ─────────────────────────────────────────────
+
+class Topic(Base):
+    __tablename__ = "topics"
+
+    id = Column(Integer, primary_key=True, index=True)
+    title = Column(String(200), nullable=False)
+    description = Column(Text, nullable=True)
+    grade = Column(Integer, nullable=False, index=True)  # 6-11
+    order_index = Column(Integer, default=0)
+    is_final = Column(Boolean, default=False)        # final topic for this grade
+    is_global_final = Column(Boolean, default=False) # the grand final after all grades
+
+    lessons = relationship("Lesson", back_populates="topic")
+    tests = relationship("Test", back_populates="topic")
 
 
 # ── Modules & Lessons ──────────────────────────────────
@@ -86,9 +104,12 @@ class Lesson(Base):
     image_url = Column(String(500), nullable=True)
     video_url = Column(String(500), nullable=True)
     order = Column(Integer, default=0)
+    grade = Column(Integer, default=6)
+    topic_id = Column(Integer, ForeignKey("topics.id", ondelete="SET NULL"), nullable=True)
     created_at = Column(DateTime, default=datetime.datetime.utcnow)
 
     module = relationship("Module", back_populates="lessons")
+    topic = relationship("Topic", back_populates="lessons")
     progress = relationship("LessonProgress", back_populates="lesson", cascade="all,delete")
 
 
@@ -116,9 +137,12 @@ class Test(Base):
     title = Column(String(200), nullable=False)
     module_id = Column(Integer, ForeignKey("modules.id", ondelete="SET NULL"), nullable=True)
     difficulty = Column(String(10), default="medium")
+    grade = Column(Integer, default=6)
+    topic_id = Column(Integer, ForeignKey("topics.id", ondelete="SET NULL"), nullable=True)
     deadline = Column(DateTime, nullable=True)
     created_at = Column(DateTime, default=datetime.datetime.utcnow)
 
+    topic = relationship("Topic", back_populates="tests")
     questions = relationship("Question", back_populates="test", cascade="all,delete",
                              order_by="Question.order")
     attempts = relationship("TestAttempt", back_populates="test", cascade="all,delete")
@@ -166,6 +190,8 @@ class CodeTask(Base):
     description = Column(Text, nullable=False)
     module_id = Column(Integer, ForeignKey("modules.id", ondelete="SET NULL"), nullable=True)
     difficulty = Column(String(10), default="medium")
+    grade = Column(Integer, default=6)
+    topic_id = Column(Integer, ForeignKey("topics.id", ondelete="SET NULL"), nullable=True)
     starter_code = Column(Text, default="")
     test_cases = Column(JSON, nullable=False)  # [{input, expected_output}, ...]
     deadline = Column(DateTime, nullable=True)

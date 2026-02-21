@@ -81,6 +81,13 @@ export default function Messenger() {
     loadContacts();
   }, []);
 
+  // Auto-select first contact when contacts load
+  useEffect(() => {
+    if (contacts.length > 0 && !selectedContact && tab === 'direct') {
+      setSelectedContact(contacts[0]);
+    }
+  }, [contacts]);
+
   useEffect(() => {
     messagesEnd.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);

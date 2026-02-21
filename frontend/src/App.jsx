@@ -22,6 +22,7 @@ import Chat from './pages/student/Chat';
 import Statistics from './pages/student/Statistics';
 import Inbox from './pages/student/Inbox';
 import StudentMessenger from './pages/student/Messenger';
+import Grades from './pages/student/Grades';
 
 // Teacher
 import TeacherDashboard from './pages/teacher/Dashboard';
@@ -33,6 +34,7 @@ import Analytics from './pages/teacher/Analytics';
 import FeedbackPage from './pages/teacher/Feedback';
 import Export from './pages/teacher/Export';
 import TeacherMessenger from './pages/teacher/Messenger';
+import Topics from './pages/teacher/Topics';
 
 function RootRedirect() {
   const { token, role } = getAuth();
@@ -70,6 +72,7 @@ export default function App() {
           <Route path="/student/stats" element={<Statistics />} />
           <Route path="/student/inbox" element={<Inbox />} />
           <Route path="/student/messenger" element={<StudentMessenger />} />
+          <Route path="/student/grades" element={<Grades />} />
         </Route>
 
         {/* Teacher Routes */}
@@ -83,6 +86,7 @@ export default function App() {
           <Route path="/teacher/feedback" element={<FeedbackPage />} />
           <Route path="/teacher/export" element={<Export />} />
           <Route path="/teacher/messenger" element={<TeacherMessenger />} />
+          <Route path="/teacher/topics" element={<Topics />} />
         </Route>
       </Routes>
     </BrowserRouter>

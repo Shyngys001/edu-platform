@@ -50,6 +50,39 @@ class UserProfile(UserOut):
     badges: list = []
 
 
+# ── Topic ──────────────────────────────────────────────
+
+class TopicCreate(BaseModel):
+    title: str
+    description: Optional[str] = None
+    grade: int  # 6-11
+    order_index: int = 0
+    is_final: bool = False
+    is_global_final: bool = False
+
+
+class TopicUpdate(BaseModel):
+    title: Optional[str] = None
+    description: Optional[str] = None
+    grade: Optional[int] = None
+    order_index: Optional[int] = None
+    is_final: Optional[bool] = None
+    is_global_final: Optional[bool] = None
+
+
+class TopicOut(BaseModel):
+    id: int
+    title: str
+    description: Optional[str] = None
+    grade: int
+    order_index: int
+    is_final: bool
+    is_global_final: bool
+
+    class Config:
+        from_attributes = True
+
+
 # ── Module / Lesson ────────────────────────────────────
 
 class ModuleOut(BaseModel):
@@ -71,6 +104,8 @@ class LessonOut(BaseModel):
     image_url: Optional[str] = None
     video_url: Optional[str] = None
     order: int
+    grade: int = 6
+    topic_id: Optional[int] = None
 
     class Config:
         from_attributes = True
@@ -83,6 +118,8 @@ class LessonCreate(BaseModel):
     image_url: Optional[str] = None
     video_url: Optional[str] = None
     order: int = 0
+    grade: int = 6
+    topic_id: Optional[int] = None
 
 
 class LessonUpdate(BaseModel):
@@ -92,6 +129,8 @@ class LessonUpdate(BaseModel):
     video_url: Optional[str] = None
     order: Optional[int] = None
     module_id: Optional[int] = None
+    grade: Optional[int] = None
+    topic_id: Optional[int] = None
 
 
 class ModuleCreate(BaseModel):
@@ -150,8 +189,20 @@ class TestCreate(BaseModel):
     title: str
     module_id: Optional[int] = None
     difficulty: str = "medium"
+    grade: int = 6
+    topic_id: Optional[int] = None
     deadline: Optional[datetime] = None
     questions: list[QuestionCreate] = []
+
+
+class TestUpdate(BaseModel):
+    title: Optional[str] = None
+    module_id: Optional[int] = None
+    difficulty: Optional[str] = None
+    grade: Optional[int] = None
+    topic_id: Optional[int] = None
+    deadline: Optional[datetime] = None
+    questions: Optional[list[QuestionCreate]] = None
 
 
 class TestOut(BaseModel):
@@ -159,6 +210,8 @@ class TestOut(BaseModel):
     title: str
     module_id: Optional[int] = None
     difficulty: str
+    grade: int = 6
+    topic_id: Optional[int] = None
     deadline: Optional[datetime] = None
     questions: list[QuestionOut] = []
 
@@ -171,6 +224,8 @@ class TestOutFull(BaseModel):
     title: str
     module_id: Optional[int] = None
     difficulty: str
+    grade: int = 6
+    topic_id: Optional[int] = None
     deadline: Optional[datetime] = None
     questions: list[QuestionOutFull] = []
 
@@ -204,6 +259,8 @@ class CodeTaskCreate(BaseModel):
     description: str
     module_id: Optional[int] = None
     difficulty: str = "medium"
+    grade: int = 6
+    topic_id: Optional[int] = None
     starter_code: str = ""
     test_cases: list[dict]
     deadline: Optional[datetime] = None
@@ -215,6 +272,8 @@ class CodeTaskOut(BaseModel):
     description: str
     module_id: Optional[int] = None
     difficulty: str
+    grade: int = 6
+    topic_id: Optional[int] = None
     starter_code: str
     deadline: Optional[datetime] = None
 
@@ -224,6 +283,18 @@ class CodeTaskOut(BaseModel):
 
 class CodeTaskOutFull(CodeTaskOut):
     test_cases: list[dict]
+
+
+class CodeTaskUpdate(BaseModel):
+    title: Optional[str] = None
+    description: Optional[str] = None
+    module_id: Optional[int] = None
+    difficulty: Optional[str] = None
+    grade: Optional[int] = None
+    topic_id: Optional[int] = None
+    starter_code: Optional[str] = None
+    test_cases: Optional[list[dict]] = None
+    deadline: Optional[datetime] = None
 
 
 class CodeSubmit(BaseModel):

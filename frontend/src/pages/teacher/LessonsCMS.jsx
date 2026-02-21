@@ -10,13 +10,16 @@ const LANG_OPTIONS = [
   { value: 'kz', label: '🇰🇿 Қазақша' },
 ];
 
+const GRADES = [6, 7, 8, 9, 10, 11];
+
 export default function LessonsCMS() {
   const [modules, setModules] = useState([]);
   const [lessons, setLessons] = useState([]);
+  const [topics, setTopics] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
   const [editing, setEditing] = useState(null);
-  const [form, setForm] = useState({ module_id: '', title: '', content: '', image_url: '', video_url: '', order: 0 });
+  const [form, setForm] = useState({ module_id: '', title: '', content: '', image_url: '', video_url: '', order: 0, grade: 6, topic_id: '' });
   const [aiLoading, setAiLoading] = useState(false);
   const [aiLang, setAiLang] = useState('ru');
   const t = useT();
@@ -26,9 +29,14 @@ export default function LessonsCMS() {
   async function load() {
     setLoading(true);
     try {
-      const [m, l] = await Promise.all([api.get('/teacher/modules'), api.get('/teacher/lessons')]);
+      const [m, l, tp] = await Promise.all([
+        api.get('/teacher/modules'),
+        api.get('/teacher/lessons'),
+        api.get('/teacher/topics'),
+      ]);
       setModules(m);
       setLessons(l);
+      setTopics(tp);
     } catch (e) {
       toast.error(e.message);
     } finally {
@@ -36,15 +44,23 @@ export default function LessonsCMS() {
     }
   }
 
+  async function loadTopicsForGrade(grade) {
+    try {
+      const tp = await api.get(`/teacher/topics?grade=${grade}`);
+      setTopics(tp);
+    } catch {}
+  }
+
   function openCreate() {
     setEditing(null);
-    setForm({ module_id: modules[0]?.id || '', title: '', content: '', image_url: '', video_url: '', order: 0 });
+    setForm({ module_id: modules[0]?.id || '', title: '', content: '', image_url: '', video_url: '', order: 0, grade: 6, topic_id: '' });
     setShowForm(true);
   }
 
   function openEdit(lesson) {
     setEditing(lesson.id);
-    setForm({ module_id: lesson.module_id, title: lesson.title, content: lesson.content || '', image_url: lesson.image_url || '', video_url: lesson.video_url || '', order: lesson.order });
+    setForm({ module_id: lesson.module_id, title: lesson.title, content: lesson.content || '', image_url: lesson.image_url || '', video_url: lesson.video_url || '', order: lesson.order, grade: lesson.grade || 6, topic_id: lesson.topic_id || '' });
+    loadTopicsForGrade(lesson.grade || 6);
     setShowForm(true);
   }
 
@@ -76,11 +92,18 @@ export default function LessonsCMS() {
   async function handleSubmit(e) {
     e.preventDefault();
     try {
+      const payload = {
+        ...form,
+        module_id: parseInt(form.module_id),
+        order: parseInt(form.order),
+        grade: parseInt(form.grade),
+        topic_id: form.topic_id ? parseInt(form.topic_id) : null,
+      };
       if (editing) {
-        await api.put(`/teacher/lessons/${editing}`, { ...form, module_id: parseInt(form.module_id) });
+        await api.put(`/teacher/lessons/${editing}`, payload);
         toast.success('Lesson updated');
       } else {
-        await api.post('/teacher/lessons', { ...form, module_id: parseInt(form.module_id), order: parseInt(form.order) });
+        await api.post('/teacher/lessons', payload);
         toast.success('Lesson created');
       }
       setShowForm(false);
@@ -129,13 +152,14 @@ export default function LessonsCMS() {
         <div className="table-wrap">
           <table>
             <thead>
-              <tr><th>Title</th><th>{t('module')}</th><th>{t('order')}</th><th>Video</th><th>{t('actions')}</th></tr>
+              <tr><th>Title</th><th>{t('module')}</th><th>{t('gradeLabel')}</th><th>{t('order')}</th><th>Video</th><th>{t('actions')}</th></tr>
             </thead>
             <tbody>
               {lessons.map(l => (
                 <tr key={l.id}>
                   <td style={{ fontWeight: 600 }}>{l.title}</td>
                   <td>{modules.find(m => m.id === l.module_id)?.title || '-'}</td>
+                  <td><span className="badge badge-primary">{t('gradeLabel')} {l.grade || 6}</span></td>
                   <td>{l.order}</td>
                   <td>{l.video_url ? 'Yes' : '-'}</td>
                   <td>
@@ -212,6 +236,35 @@ export default function LessonsCMS() {
               <div className="form-group">
                 <label>{t('content')} (Markdown)</label>
                 <textarea className="form-input" value={form.content} onChange={e => setForm(f => ({ ...f, content: e.target.value }))} rows={10} />
+              </div>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
+                <div className="form-group">
+                  <label>{t('gradeLabel')}</label>
+                  <select
+                    className="form-input"
+                    value={form.grade}
+                    onChange={e => {
+                      const g = parseInt(e.target.value);
+                      setForm(f => ({ ...f, grade: g, topic_id: '' }));
+                      loadTopicsForGrade(g);
+                    }}
+                  >
+                    {GRADES.map(g => <option key={g} value={g}>{t('gradeLabel')} {g}</option>)}
+                  </select>
+                </div>
+                <div className="form-group">
+                  <label>{t('topic')}</label>
+                  <select
+                    className="form-input"
+                    value={form.topic_id}
+                    onChange={e => setForm(f => ({ ...f, topic_id: e.target.value }))}
+                  >
+                    <option value="">— {t('noTopic')} —</option>
+                    {topics.filter(tp => tp.grade === form.grade).map(tp => (
+                      <option key={tp.id} value={tp.id}>{tp.title}</option>
+                    ))}
+                  </select>
+                </div>
               </div>
               <div className="form-group">
                 <label>Image URL</label>

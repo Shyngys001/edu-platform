@@ -7,6 +7,7 @@ import {
   FiHome, FiBook, FiCode, FiFileText, FiAward,
   FiMessageSquare, FiBarChart2, FiUsers,
   FiLogOut, FiInbox, FiDownload, FiMessageCircle,
+  FiLayers, FiList,
 } from 'react-icons/fi';
 
 export default function Sidebar({ onNavClick }) {
@@ -23,6 +24,7 @@ export default function Sidebar({ onNavClick }) {
     { to: '/student/stats', icon: <FiBarChart2 />, label: t('statistics') },
     { to: '/student/inbox', icon: <FiInbox />, label: t('inbox') },
     { to: '/student/messenger', icon: <FiMessageCircle />, label: t('messenger') },
+    { to: '/student/grades', icon: <FiLayers />, label: t('gradeProgress') },
   ];
 
   const teacherLinks = [
@@ -35,6 +37,7 @@ export default function Sidebar({ onNavClick }) {
     { to: '/teacher/feedback', icon: <FiMessageSquare />, label: t('feedback') },
     { to: '/teacher/export', icon: <FiDownload />, label: t('export') },
     { to: '/teacher/messenger', icon: <FiMessageCircle />, label: t('messenger') },
+    { to: '/teacher/topics', icon: <FiList />, label: t('topics') },
   ];
 
   const links = role === 'teacher' ? teacherLinks : studentLinks;
