@@ -4,12 +4,6 @@ import { useT } from '../../utils/i18n';
 import toast from 'react-hot-toast';
 import { FiPlus, FiTrash2, FiEye, FiZap, FiChevronDown, FiChevronUp, FiEdit2 } from 'react-icons/fi';
 
-const LANG_OPTIONS = [
-  { value: 'ru', label: '🇷🇺 Русский' },
-  { value: 'en', label: '🇬🇧 English' },
-  { value: 'kz', label: '🇰🇿 Қазақша' },
-];
-
 const GRADES = [6, 7, 8, 9, 10, 11];
 
 export default function TestsCMS() {
@@ -23,7 +17,6 @@ export default function TestsCMS() {
   const [form, setForm] = useState({ title: '', module_id: '', difficulty: 'medium', grade: 6, topic_id: '', questions: [] });
   const [newQ, setNewQ] = useState({ question_type: 'mcq', text: '', options: ['', '', '', ''], correct_answer: '', explanation: '' });
   const [aiLoading, setAiLoading] = useState(false);
-  const [aiLang, setAiLang] = useState('ru');
   const [editingQ, setEditingQ] = useState(null); // index of question being edited
   const t = useT();
 
@@ -120,7 +113,7 @@ export default function TestsCMS() {
         module_id: form.module_id ? parseInt(form.module_id) : null,
         difficulty: form.difficulty,
         num_questions: 5,
-        lang: aiLang,
+        lang: 'kz',
       });
       setForm(f => ({
         ...f,
@@ -276,24 +269,7 @@ export default function TestsCMS() {
                   {aiLoading ? t('generating') : t('generate')}
                 </button>
               </div>
-              <div style={{ display: 'flex', gap: 6 }}>
-                {LANG_OPTIONS.map(lo => (
-                  <button
-                    key={lo.value}
-                    type="button"
-                    onClick={() => setAiLang(lo.value)}
-                    style={{
-                      padding: '4px 12px', borderRadius: 6, border: 'none', cursor: 'pointer',
-                      fontSize: '0.8rem', fontWeight: 600,
-                      background: aiLang === lo.value ? 'white' : 'rgba(255,255,255,0.2)',
-                      color: aiLang === lo.value ? '#764ba2' : 'white',
-                      transition: 'all 0.2s',
-                    }}
-                  >
-                    {lo.label}
-                  </button>
-                ))}
-              </div>
+              <div style={{ fontSize: '0.78rem', opacity: 0.85 }}>🇰🇿 Мазмұн қазақ тілінде жасалады</div>
             </div>
 
             <form onSubmit={handleCreate}>

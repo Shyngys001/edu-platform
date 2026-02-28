@@ -553,7 +553,7 @@ def ai_generate_test(req: dict, db: Session = Depends(get_db), user: User = Depe
     module_id = req.get("module_id")
     difficulty = req.get("difficulty", "medium")
     num_questions = req.get("num_questions", 5)
-    lang = req.get("lang", "ru")
+    lang = req.get("lang", "kz")
 
     module_title = "Python Programming"
     if module_id:
@@ -573,7 +573,7 @@ def ai_generate_lesson(req: dict, db: Session = Depends(get_db), user: User = De
     from app.utils.ai_content import generate_lesson
     module_id = req.get("module_id")
     topic = req.get("topic", "")
-    lang = req.get("lang", "ru")
+    lang = req.get("lang", "kz")
 
     module_title = "Python Programming"
     if module_id:
@@ -593,7 +593,7 @@ def ai_generate_task(req: dict, db: Session = Depends(get_db), user: User = Depe
     from app.utils.ai_content import generate_code_task
     module_id = req.get("module_id")
     difficulty = req.get("difficulty", "medium")
-    lang = req.get("lang", "ru")
+    lang = req.get("lang", "kz")
 
     module_title = "Python Programming"
     if module_id:

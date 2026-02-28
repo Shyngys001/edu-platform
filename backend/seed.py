@@ -20,15 +20,15 @@ db.commit()
 # ── Users ──────────────────────────────────────────────
 teacher = User(
     username="teacher", hashed_password=hash_password("teacher123"),
-    full_name="Ms. Aigerim Nurova", role="teacher",
+    full_name="Айгерім Нұрова", role="teacher",
 )
 students = [
-    User(username="alice", hashed_password=hash_password("alice123"),
-         full_name="Alice Johnson", role="student", grade="10A", points=45),
-    User(username="bob", hashed_password=hash_password("bob123"),
-         full_name="Bob Smith", role="student", grade="10A", points=120),
-    User(username="charlie", hashed_password=hash_password("charlie123"),
-         full_name="Charlie Brown", role="student", grade="10B", points=230),
+    User(username="aisha", hashed_password=hash_password("aisha123"),
+         full_name="Айша Бекова", role="student", grade="10A", points=45),
+    User(username="daniyar", hashed_password=hash_password("daniyar123"),
+         full_name="Данияр Сейтов", role="student", grade="10A", points=120),
+    User(username="zarina", hashed_password=hash_password("zarina123"),
+         full_name="Зарина Алибекова", role="student", grade="10B", points=230),
 ]
 db.add(teacher)
 db.add_all(students)
@@ -36,13 +36,13 @@ db.flush()
 
 # ── Modules ────────────────────────────────────────────
 modules_data = [
-    ("Python Basics", "Introduction to Python programming language"),
-    ("Variables and Data Types", "Understanding variables, numbers, strings, and booleans"),
-    ("String Concept", "Deep dive into Python strings"),
-    ("String Functions", "len(), split(), replace(), lower()/upper() and more"),
-    ("String Loops", "Iterating over strings with for loops"),
-    ("Regular Expressions", "Pattern matching with the re module"),
-    ("Working with Text Files", "Reading and writing files in Python"),
+    ("Python негіздері", "Python бағдарламалау тіліне кіріспе"),
+    ("Айнымалылар мен деректер типтері", "Айнымалылар, сандар, жолдар және логикалық мәндер"),
+    ("Жолдар тұжырымдамасы", "Python жолдарын тереңдетіп үйрену"),
+    ("Жол функциялары", "len(), split(), replace(), lower()/upper() және т.б."),
+    ("Жолдардағы циклдер", "for циклімен жолдарды аралау"),
+    ("Тұрақты өрнектер", "re модулімен үлгілерді іздеу"),
+    ("Мәтіндік файлдармен жұмыс", "Python-да файлдарды оқу және жазу"),
 ]
 modules = []
 for i, (title, desc) in enumerate(modules_data):
@@ -53,121 +53,119 @@ for i, (title, desc) in enumerate(modules_data):
 
 # ── Lessons ────────────────────────────────────────────
 lessons_data = [
-    # Module 1: Python Basics
-    (modules[0].id, "What is Python?", """# What is Python?
+    # Модуль 1: Python негіздері
+    (modules[0].id, "Python дегеніміз не?", """# Python дегеніміз не?
 
-Python is a high-level, interpreted programming language created by Guido van Rossum in 1991. It's known for its clean, readable syntax and versatility.
+Python — Гвидо ван Россум 1991 жылы жасаған жоғары деңгейлі, интерпретацияланатын бағдарламалау тілі. Ол таза, оқылымды синтаксисімен және икемділігімен танымал.
 
-## Why Learn Python?
+## Неліктен Python үйрену керек?
 
-- **Easy to learn** — syntax is close to English
-- **Versatile** — web, data science, AI, automation
-- **Large community** — thousands of libraries
-- **In demand** — one of the most popular languages
+- **Үйренуге оңай** — синтаксис ағылшын тіліне жақын
+- **Икемді** — веб, деректер ғылымы, ЖИ, автоматтандыру
+- **Үлкен қоғамдастық** — мыңдаған кітапханалар
+- **Сұранысқа ие** — ең танымал тілдердің бірі
 
-## Your First Program
+## Алғашқы бағдарлама
 
 ```python
-print("Hello, World!")
+print("Сәлем, Әлем!")
 ```
 
-This single line outputs text to the screen. In Python, `print()` is a built-in function that displays output.
+Бұл бір жол экранға мәтін шығарады. Python-да `print()` — кірістірілген функция.
 
-## Key Features
+## Негізгі ерекшеліктер
 
-1. **Indentation matters** — Python uses indentation instead of braces
-2. **Dynamic typing** — no need to declare variable types
-3. **Interpreted** — code runs line by line
+1. **Шегіністер маңызды** — Python жақшалардың орнына шегіністерді пайдаланады
+2. **Динамикалық типтеу** — айнымалы типтерін жариялаудың қажеті жоқ
+3. **Интерпретацияланатын** — код жол-жолмен орындалады
 
-## Python Interactive Mode
-
-You can test Python code interactively:
+## Python интерактивті режимі
 
 ```python
 >>> 2 + 3
 5
->>> "Hello" + " " + "World"
-'Hello World'
+>>> "Сәлем" + " " + "Әлем"
+'Сәлем Әлем'
 ```
 """, None, "https://www.youtube.com/watch?v=kqtD5dpn9C8"),
 
-    (modules[0].id, "Installing Python & IDE Setup", """# Setting Up Your Environment
+    (modules[0].id, "Python орнату және IDE баптау", """# Ортаны баптау
 
-## Installing Python
+## Python орнату
 
-1. Visit [python.org](https://python.org)
-2. Download the latest version (3.12+)
-3. Run the installer — **check "Add to PATH"**
+1. [python.org](https://python.org) сайтына кіріңіз
+2. Соңғы нұсқаны жүктеп алыңыз (3.12+)
+3. Орнатушыны іске қосыңыз — **"Add to PATH" белгіленуін тексеріңіз**
 
-## Verifying Installation
+## Орнатуды тексеру
 
-Open terminal/command prompt:
+Терминалды ашыңыз:
 ```bash
 python --version
 # Python 3.12.x
 ```
 
-## Choosing an IDE
+## IDE таңдау
 
-| IDE | Best For |
-|-----|----------|
-| VS Code | General purpose, lightweight |
-| PyCharm | Full-featured Python IDE |
-| Jupyter | Data science, notebooks |
-| IDLE | Comes with Python, simple |
+| IDE | Қолданылуы |
+|-----|------------|
+| VS Code | Жалпы мақсатты, жеңіл |
+| PyCharm | Толық функционалды Python IDE |
+| Jupyter | Деректер ғылымы, блокнот |
+| IDLE | Python-мен бірге келеді, қарапайым |
 
-## Writing Your First Script
+## Алғашқы сценарий жазу
 
-Create a file `hello.py`:
+`salam.py` файлын жасаңыз:
 ```python
-name = input("What is your name? ")
-print(f"Hello, {name}! Welcome to Python!")
+ат = input("Атыңыз кім? ")
+print(f"Сәлем, {ат}! Python-ға қош келдіңіз!")
 ```
 
-Run it:
+Іске қосыңыз:
 ```bash
-python hello.py
+python salam.py
 ```
 """, None, None),
 
-    # Module 2: Variables and Data Types
-    (modules[1].id, "Variables in Python", """# Variables in Python
+    # Модуль 2: Айнымалылар мен деректер типтері
+    (modules[1].id, "Python-дағы айнымалылар", """# Python-дағы айнымалылар
 
-A **variable** is a name that stores a value in memory.
+**Айнымалы** — жадтағы мәнді сақтайтын атау.
 
-## Creating Variables
+## Айнымалылар жасау
 
 ```python
-x = 10          # integer
-name = "Alice"  # string
-pi = 3.14       # float
-is_active = True # boolean
+x = 10           # бүтін сан
+ат = "Айша"      # жол
+пи = 3.14        # жылжымалы нүктелі сан
+белсенді = True  # логикалық мән
 ```
 
-Python is **dynamically typed** — no need to declare the type.
+Python **динамикалық типтелген** — типті жариялаудың қажеті жоқ.
 
-## Variable Naming Rules
+## Айнымалы атауына қойылатын талаптар
 
-- Must start with a letter or underscore
-- Can contain letters, numbers, underscores
-- Case-sensitive (`name` ≠ `Name`)
-- Cannot use Python keywords (`if`, `for`, `class`, etc.)
+- Әріп немесе астын сызумен басталуы керек
+- Әріптер, сандар, астын сызуды қамтуы мүмкін
+- Регистрге сезімтал (`ат` ≠ `Ат`)
+- Python кілт сөздерін қолдануға болмайды (`if`, `for`, `class` т.б.)
 
-## Good Naming Practices
+## Жақсы атау тәжірибелері
 
 ```python
-# Good
-student_name = "Alice"
-total_score = 95
-is_passed = True
+# Жақсы
+оқушы_аты = "Айша"
+жалпы_ұпай = 95
+тапсырылды = True
 
-# Bad
-x = "Alice"
+# Нашар
+x = "Айша"
 a = 95
 b = True
 ```
 
-## Multiple Assignment
+## Бірнеше меншіктеу
 
 ```python
 a, b, c = 1, 2, 3
@@ -175,178 +173,178 @@ x = y = z = 0
 ```
 """, None, None),
 
-    (modules[1].id, "Data Types", """# Python Data Types
+    (modules[1].id, "Деректер типтері", """# Python деректер типтері
 
-## Basic Types
+## Негізгі типтер
 
-| Type | Example | Description |
-|------|---------|-------------|
-| `int` | `42` | Whole numbers |
-| `float` | `3.14` | Decimal numbers |
-| `str` | `"hello"` | Text |
-| `bool` | `True` | True/False |
+| Тип | Мысал | Сипаттама |
+|-----|-------|-----------|
+| `int` | `42` | Бүтін сандар |
+| `float` | `3.14` | Ондық сандар |
+| `str` | `"сәлем"` | Мәтін |
+| `bool` | `True` | Рас/Жалған |
 
-## Checking Types
+## Типтерді тексеру
 
 ```python
 x = 42
 print(type(x))  # <class 'int'>
 
-name = "Alice"
-print(type(name))  # <class 'str'>
+ат = "Айша"
+print(type(ат))  # <class 'str'>
 ```
 
-## Type Conversion
+## Тип түрлендіру
 
 ```python
-# String to int
-num = int("42")      # 42
+# Жолды бүтін санға
+сан = int("42")      # 42
 
-# Int to string
-text = str(42)       # "42"
+# Бүтін санды жолға
+мәтін = str(42)      # "42"
 
-# String to float
-pi = float("3.14")   # 3.14
+# Жолды жылжымалы нүктелі санға
+пи = float("3.14")   # 3.14
 
-# Float to int (truncates)
-whole = int(3.99)     # 3
+# Жылжымалы нүктелі санды бүтін санға (қиып алады)
+бүтін = int(3.99)    # 3
 ```
 
-## Operations by Type
+## Типтер бойынша амалдар
 
 ```python
-# Numbers
+# Сандар
 10 + 3    # 13
 10 / 3    # 3.333...
-10 // 3   # 3 (floor division)
-10 % 3    # 1 (remainder)
-2 ** 3    # 8 (power)
+10 // 3   # 3 (бүтін бөлу)
+10 % 3    # 1 (қалдық)
+2 ** 3    # 8 (дәреже)
 ```
 """, None, None),
 
-    # Module 3: String Concept
-    (modules[2].id, "Understanding Strings", """# Strings in Python
+    # Модуль 3: Жолдар тұжырымдамасы
+    (modules[2].id, "Жолдарды түсіну", """# Python-дағы жолдар
 
-A string is a **sequence of characters** enclosed in quotes.
+Жол — тырнақшаға алынған **символдар тізбегі**.
 
-## Creating Strings
+## Жол жасау
 
 ```python
-s1 = 'Hello'        # single quotes
-s2 = "World"        # double quotes
-s3 = \"\"\"Multi-line
-string\"\"\"              # triple quotes
+с1 = 'Сәлем'          # бір тырнақша
+с2 = "Әлем"           # қос тырнақша
+с3 = \"\"\"Көп жолды
+жол\"\"\"               # үш тырнақша
 ```
 
-## String Indexing
+## Жол индексациясы
 
 ```python
-text = "Python"
-#       P y t h o n
-#       0 1 2 3 4 5
-#      -6-5-4-3-2-1
+мәтін = "Python"
+#         P y t h o n
+#         0 1 2 3 4 5
+#        -6-5-4-3-2-1
 
-print(text[0])    # P
-print(text[-1])   # n
+print(мәтін[0])    # P
+print(мәтін[-1])   # n
 ```
 
-## String Slicing
+## Жол кесінділері
 
 ```python
-text = "Python"
-print(text[0:3])   # Pyt
-print(text[2:])    # thon
-print(text[:4])    # Pyth
-print(text[::2])   # Pto (every 2nd char)
-print(text[::-1])  # nohtyP (reversed)
+мәтін = "Python"
+print(мәтін[0:3])   # Pyt
+print(мәтін[2:])    # thon
+print(мәтін[:4])    # Pyth
+print(мәтін[::2])   # Pto (әрбір 2-ші символ)
+print(мәтін[::-1])  # nohtyP (кері ретпен)
 ```
 
-## String Properties
+## Жол қасиеттері
 
-- **Immutable** — cannot change individual characters
-- **Iterable** — can loop through characters
-- **Ordered** — characters maintain their position
-
-```python
-# This causes an error:
-text = "Hello"
-# text[0] = "h"  # TypeError!
-
-# Instead, create a new string:
-text = "h" + text[1:]  # "hello"
-```
-""", None, None),
-
-    # Module 4: String Functions
-    (modules[3].id, "Essential String Functions", """# String Functions
-
-## len() — Length
+- **Өзгермейді** — жекелеген символдарды өзгерту мүмкін емес
+- **Аралануға болады** — символдар арқылы цикл жүргізуге болады
+- **Реттелген** — символдар өз позицияларын сақтайды
 
 ```python
-text = "Hello World"
-print(len(text))  # 11
-```
+# Бұл қатеге әкеледі:
+мәтін = "Сәлем"
+# мәтін[0] = "с"  # TypeError!
 
-## split() — Split into List
-
-```python
-sentence = "Hello World Python"
-words = sentence.split()
-print(words)  # ['Hello', 'World', 'Python']
-
-csv = "a,b,c,d"
-items = csv.split(",")
-print(items)  # ['a', 'b', 'c', 'd']
-```
-
-## replace() — Replace Substring
-
-```python
-text = "Hello World"
-new_text = text.replace("World", "Python")
-print(new_text)  # Hello Python
-```
-
-## Case Functions
-
-```python
-text = "Hello World"
-print(text.upper())    # HELLO WORLD
-print(text.lower())    # hello world
-print(text.title())    # Hello World
-print(text.capitalize()) # Hello world
-```
-
-## Finding & Checking
-
-```python
-text = "Hello World"
-print(text.find("World"))    # 6
-print(text.count("l"))       # 3
-print(text.startswith("He")) # True
-print(text.endswith("ld"))   # True
-print("World" in text)       # True
-```
-
-## Stripping Whitespace
-
-```python
-text = "  Hello  "
-print(text.strip())   # "Hello"
-print(text.lstrip())  # "Hello  "
-print(text.rstrip())  # "  Hello"
+# Оның орнына жаңа жол жасаңыз:
+мәтін = "с" + мәтін[1:]  # "сәлем"
 ```
 """, None, None),
 
-    # Module 5: String Loops
-    (modules[4].id, "Looping Through Strings", """# String Loops
+    # Модуль 4: Жол функциялары
+    (modules[3].id, "Негізгі жол функциялары", """# Жол функциялары
 
-## For Loop with Strings
+## len() — Ұзындық
 
 ```python
-word = "Python"
-for char in word:
-    print(char)
+мәтін = "Сәлем Әлем"
+print(len(мәтін))  # 10
+```
+
+## split() — Тізімге бөлу
+
+```python
+сөйлем = "Сәлем Әлем Python"
+сөздер = сөйлем.split()
+print(сөздер)  # ['Сәлем', 'Әлем', 'Python']
+
+csv = "а,б,в,г"
+элементтер = csv.split(",")
+print(элементтер)  # ['а', 'б', 'в', 'г']
+```
+
+## replace() — Ішкі жолды ауыстыру
+
+```python
+мәтін = "Сәлем Әлем"
+жаңа_мәтін = мәтін.replace("Әлем", "Python")
+print(жаңа_мәтін)  # Сәлем Python
+```
+
+## Регистр функциялары
+
+```python
+мәтін = "Сәлем Әлем"
+print(мәтін.upper())      # СӘЛЕМ ӘЛЕМ
+print(мәтін.lower())      # сәлем әлем
+print(мәтін.title())      # Сәлем Әлем
+print(мәтін.capitalize()) # Сәлем әлем
+```
+
+## Іздеу және тексеру
+
+```python
+мәтін = "Сәлем Әлем"
+print(мәтін.find("Әлем"))      # 6
+print(мәтін.count("е"))        # 2
+print(мәтін.startswith("Сәл")) # True
+print(мәтін.endswith("лем"))   # True
+print("Әлем" in мәтін)         # True
+```
+
+## Бос орындарды кесу
+
+```python
+мәтін = "  Сәлем  "
+print(мәтін.strip())   # "Сәлем"
+print(мәтін.lstrip())  # "Сәлем  "
+print(мәтін.rstrip())  # "  Сәлем"
+```
+""", None, None),
+
+    # Модуль 5: Жолдардағы циклдер
+    (modules[4].id, "Жолдарды циклмен аралау", """# Жолдардағы циклдер
+
+## Жолмен for циклі
+
+```python
+сөз = "Python"
+for символ in сөз:
+    print(символ)
 # P
 # y
 # t
@@ -355,174 +353,174 @@ for char in word:
 # n
 ```
 
-## Loop with Index
+## Индекспен цикл
 
 ```python
-word = "Python"
-for i in range(len(word)):
-    print(f"Index {i}: {word[i]}")
+сөз = "Python"
+for i in range(len(сөз)):
+    print(f"Индекс {i}: {сөз[i]}")
 ```
 
-## Using enumerate()
+## enumerate() пайдалану
 
 ```python
-word = "Python"
-for i, char in enumerate(word):
-    print(f"{i}: {char}")
+сөз = "Python"
+for i, символ in enumerate(сөз):
+    print(f"{i}: {символ}")
 ```
 
-## Practical Examples
+## Практикалық мысалдар
 
-### Count vowels
+### Дауысты дыбыстарды санау
 ```python
-text = "Hello World"
-vowels = "aeiouAEIOU"
-count = 0
-for char in text:
-    if char in vowels:
-        count += 1
-print(f"Vowels: {count}")  # 3
+мәтін = "Сәлем Әлем"
+дауысты = "аәеиіоөуүяюёэ"
+саны = 0
+for символ in мәтін.lower():
+    if символ in дауысты:
+        саны += 1
+print(f"Дауысты дыбыстар: {саны}")
 ```
 
-### Reverse a string
+### Жолды кері айналдыру
 ```python
-text = "Hello"
-reversed_text = ""
-for char in text:
-    reversed_text = char + reversed_text
-print(reversed_text)  # olleH
+мәтін = "Сәлем"
+кері_мәтін = ""
+for символ in мәтін:
+    кері_мәтін = символ + кері_мәтін
+print(кері_мәтін)  # меләС
 ```
 
-### Check palindrome
+### Палиндром тексеру
 ```python
-word = "racecar"
-is_palindrome = word == word[::-1]
-print(is_palindrome)  # True
+сөз = "казак"
+палиндром = сөз == сөз[::-1]
+print(палиндром)  # True
 ```
 """, None, None),
 
-    # Module 6: Regex
-    (modules[5].id, "Introduction to Regex", """# Regular Expressions (Regex)
+    # Модуль 6: Тұрақты өрнектер
+    (modules[5].id, "Тұрақты өрнектерге кіріспе", """# Тұрақты өрнектер (Regex)
 
-The `re` module provides regex support in Python.
+`re` модулі Python-да regex қолдауын қамтамасыз етеді.
 
-## Basic Usage
-
-```python
-import re
-
-text = "My phone is 123-456-7890"
-pattern = r'\\d{3}-\\d{3}-\\d{4}'
-match = re.search(pattern, text)
-print(match.group())  # 123-456-7890
-```
-
-## Common Patterns
-
-| Pattern | Matches |
-|---------|---------|
-| `\\d` | Any digit (0-9) |
-| `\\w` | Any word character |
-| `\\s` | Any whitespace |
-| `.` | Any character |
-| `+` | One or more |
-| `*` | Zero or more |
-| `?` | Zero or one |
-| `{n}` | Exactly n times |
-
-## Key Functions
+## Негізгі қолданыс
 
 ```python
 import re
 
-# findall — find all matches
-nums = re.findall(r'\\d+', "abc 123 def 456")
-print(nums)  # ['123', '456']
-
-# sub — replace pattern
-result = re.sub(r'\\d+', 'X', "abc 123 def 456")
-print(result)  # abc X def X
-
-# split — split by pattern
-parts = re.split(r'[,;]', "a,b;c,d")
-print(parts)  # ['a', 'b', 'c', 'd']
+мәтін = "Менің телефоным 123-456-7890"
+үлгі = r'\\d{3}-\\d{3}-\\d{4}'
+сәйкестік = re.search(үлгі, мәтін)
+print(сәйкестік.group())  # 123-456-7890
 ```
 
-## Practical Example: Email Validation
+## Жалпы үлгілер
+
+| Үлгі | Сәйкес келеді |
+|------|---------------|
+| `\\d` | Кез келген цифр (0-9) |
+| `\\w` | Кез келген сөз символы |
+| `\\s` | Кез келген бос орын |
+| `.` | Кез келген символ |
+| `+` | Бір немесе одан көп |
+| `*` | Нөл немесе одан көп |
+| `?` | Нөл немесе бір |
+| `{n}` | Дәл n рет |
+
+## Негізгі функциялар
+
+```python
+import re
+
+# findall — барлық сәйкестіктерді табу
+сандар = re.findall(r'\\d+', "abc 123 def 456")
+print(сандар)  # ['123', '456']
+
+# sub — үлгіні ауыстыру
+нәтиже = re.sub(r'\\d+', 'X', "abc 123 def 456")
+print(нәтиже)  # abc X def X
+
+# split — үлгімен бөлу
+бөліктер = re.split(r'[,;]', "а,б;в,г")
+print(бөліктер)  # ['а', 'б', 'в', 'г']
+```
+
+## Практикалық мысал: Электрондық пошта тексеру
 
 ```python
 import re
 
 email = "user@example.com"
-pattern = r'^[\\w.-]+@[\\w.-]+\\.\\w+$'
-if re.match(pattern, email):
-    print("Valid email")
+үлгі = r'^[\\w.-]+@[\\w.-]+\\.\\w+$'
+if re.match(үлгі, email):
+    print("Жарамды электрондық пошта")
 ```
 """, None, None),
 
-    # Module 7: Text Files
-    (modules[6].id, "Reading and Writing Files", """# Working with Text Files
+    # Модуль 7: Мәтіндік файлдармен жұмыс
+    (modules[6].id, "Файлдарды оқу және жазу", """# Мәтіндік файлдармен жұмыс
 
-## Reading a File
+## Файлды оқу
 
 ```python
-# Read entire file
-with open("data.txt", "r") as f:
-    content = f.read()
-    print(content)
+# Бүкіл файлды оқу
+with open("деректер.txt", "r") as ф:
+    мазмұн = ф.read()
+    print(мазмұн)
 
-# Read line by line
-with open("data.txt", "r") as f:
-    for line in f:
-        print(line.strip())
+# Жол-жолмен оқу
+with open("деректер.txt", "r") as ф:
+    for жол in ф:
+        print(жол.strip())
 
-# Read all lines into a list
-with open("data.txt", "r") as f:
-    lines = f.readlines()
+# Барлық жолдарды тізімге оқу
+with open("деректер.txt", "r") as ф:
+    жолдар = ф.readlines()
 ```
 
-## Writing to a File
+## Файлға жазу
 
 ```python
-# Write (overwrites existing content)
-with open("output.txt", "w") as f:
-    f.write("Hello World\\n")
-    f.write("Second line\\n")
+# Жазу (бар мазмұнды жояды)
+with open("нәтиже.txt", "w") as ф:
+    ф.write("Сәлем Әлем\\n")
+    ф.write("Екінші жол\\n")
 
-# Append to file
-with open("output.txt", "a") as f:
-    f.write("New line appended\\n")
+# Файлға қосу
+with open("нәтиже.txt", "a") as ф:
+    ф.write("Жаңа жол қосылды\\n")
 ```
 
-## The `with` Statement
+## `with` операторы
 
-Using `with` ensures the file is properly closed:
+`with` файлдың дұрыс жабылуын қамтамасыз етеді:
 
 ```python
-# Good — file auto-closes
-with open("data.txt") as f:
-    data = f.read()
+# Жақсы — файл автоматты жабылады
+with open("деректер.txt") as ф:
+    деректер = ф.read()
 
-# Without with — must close manually
-f = open("data.txt")
-data = f.read()
-f.close()  # Don't forget this!
+# with-сіз — қолмен жабу керек
+ф = open("деректер.txt")
+деректер = ф.read()
+ф.close()  # Ұмытпаңыз!
 ```
 
-## Practical Example: Word Counter
+## Практикалық мысал: Сөздерді санау
 
 ```python
-with open("story.txt", "r") as f:
-    text = f.read()
+with open("мәтін.txt", "r") as ф:
+    мәтін = ф.read()
 
-words = text.split()
-word_count = len(words)
-print(f"Total words: {word_count}")
+сөздер = мәтін.split()
+сөздер_саны = len(сөздер)
+print(f"Жалпы сөздер: {сөздер_саны}")
 
-# Count specific word
-target = "python"
-count = text.lower().split().count(target)
-print(f"'{target}' appears {count} times")
+# Нақты сөзді санау
+нысан = "python"
+саны = мәтін.lower().split().count(нысан)
+print(f"'{нысан}' саны: {саны} рет")
 ```
 """, None, None),
 ]
@@ -536,29 +534,29 @@ for mod_id, title, content, img, video in lessons_data:
 db.flush()
 
 # ── Tests ──────────────────────────────────────────────
-# Test 1: Python Basics MCQ
-test1 = Test(title="Python Basics Quiz", module_id=modules[0].id, difficulty="easy")
+# Тест 1: Python негіздері
+test1 = Test(title="Python негіздері бойынша тест", module_id=modules[0].id, difficulty="easy")
 db.add(test1)
 db.flush()
 
 test1_questions = [
     Question(test_id=test1.id, question_type="mcq", order=1,
-             text="What is the output of print(2 ** 3)?",
+             text="print(2 ** 3) нәтижесі қандай?",
              options=["5", "6", "8", "9"],
              correct_answer="8",
-             explanation="** is the power operator. 2^3 = 8"),
+             explanation="** дәреже операторы. 2-нің 3-ші дәрежесі = 8"),
     Question(test_id=test1.id, question_type="mcq", order=2,
-             text="Which keyword is used to define a function in Python?",
+             text="Python-да функцияны анықтау үшін қай кілт сөз қолданылады?",
              options=["function", "func", "def", "define"],
              correct_answer="def",
-             explanation="In Python, functions are defined using the 'def' keyword."),
+             explanation="Python-да функциялар 'def' кілт сөзімен анықталады."),
     Question(test_id=test1.id, question_type="mcq", order=3,
-             text="What type is the value True?",
+             text="True мәнінің типі қандай?",
              options=["int", "str", "bool", "float"],
              correct_answer="bool",
-             explanation="True and False are boolean (bool) values."),
+             explanation="True және False логикалық (bool) мәндер болып табылады."),
     Question(test_id=test1.id, question_type="choose_code", order=4,
-             text="Which code correctly prints numbers 0 to 4?",
+             text="Қай код 0-ден 4-ке дейінгі сандарды дұрыс шығарады?",
              options=[
                  "for i in range(5): print(i)",
                  "for i in range(1,5): print(i)",
@@ -566,129 +564,143 @@ test1_questions = [
                  "for i in [0,1,2,3,4,5]: print(i)",
              ],
              correct_answer="for i in range(5): print(i)",
-             explanation="range(5) generates 0,1,2,3,4"),
+             explanation="range(5) 0,1,2,3,4 сандарын генерациялайды"),
     Question(test_id=test1.id, question_type="mcq", order=5,
-             text="What does len('Hello') return?",
-             options=["4", "5", "6", "Error"],
+             text="len('Сәлем') қанша қайтарады?",
+             options=["4", "5", "6", "Қате"],
              correct_answer="5",
-             explanation="len() returns the number of characters. 'Hello' has 5 characters."),
+             explanation="len() символдар санын қайтарады. 'Сәлем' 5 символдан тұрады."),
 ]
 db.add_all(test1_questions)
 
-# Test 2: String Functions
-test2 = Test(title="String Functions Test", module_id=modules[3].id, difficulty="medium")
+# Тест 2: Жол функциялары
+test2 = Test(title="Жол функциялары тесті", module_id=modules[3].id, difficulty="medium")
 db.add(test2)
 db.flush()
 
 test2_questions = [
     Question(test_id=test2.id, question_type="mcq", order=1,
-             text="What does 'hello world'.split() return?",
-             options=["['hello world']", "['hello', 'world']", "('hello', 'world')", "['h','e','l','l','o',' ','w','o','r','l','d']"],
-             correct_answer="['hello', 'world']",
-             explanation="split() without arguments splits by whitespace."),
+             text="'сәлем әлем'.split() нені қайтарады?",
+             options=["['сәлем әлем']", "['сәлем', 'әлем']", "('сәлем', 'әлем')", "['с','ә','л','е','м',' ','ә','л','е','м']"],
+             correct_answer="['сәлем', 'әлем']",
+             explanation="split() аргументсіз бос орын бойынша бөледі."),
     Question(test_id=test2.id, question_type="find_bug", order=2,
-             text="Find the bug:\n```python\ntext = 'Hello'\ntext[0] = 'h'\nprint(text)\n```",
-             options=["Line 1: wrong quotes", "Line 2: strings are immutable", "Line 3: print is wrong", "No bug"],
-             correct_answer="Line 2: strings are immutable",
-             explanation="Strings in Python are immutable. You cannot change individual characters."),
+             text="Қатені табыңыз:\n```python\nмәтін = 'Сәлем'\nмәтін[0] = 'с'\nprint(мәтін)\n```",
+             options=["1-жол: тырнақша қате", "2-жол: жолдар өзгермейді", "3-жол: print қате", "Қате жоқ"],
+             correct_answer="2-жол: жолдар өзгермейді",
+             explanation="Python-дағы жолдар өзгермейді. Жекелеген символдарды өзгерту мүмкін емес."),
     Question(test_id=test2.id, question_type="mcq", order=3,
-             text="What does 'Python'.replace('P', 'J') return?",
-             options=["'Python'", "'Jython'", "'python'", "Error"],
+             text="'Python'.replace('P', 'J') нені қайтарады?",
+             options=["'Python'", "'Jython'", "'python'", "Қате"],
              correct_answer="'Jython'",
-             explanation="replace() substitutes the first argument with the second."),
+             explanation="replace() бірінші аргументті екіншісіне ауыстырады."),
     Question(test_id=test2.id, question_type="matching", order=4,
-             text="Match the function to its purpose:",
+             text="Функцияны оның мақсатымен сәйкестендіріңіз:",
              options={
                  "left": ["len()", "split()", "upper()", "strip()"],
-                 "right": ["Returns length", "Breaks into list", "UPPERCASE", "Remove whitespace"],
+                 "right": ["Ұзындықты қайтарады", "Тізімге бөледі", "БАС ӘРІП", "Бос орынды кеседі"],
              },
-             correct_answer={"len()": "Returns length", "split()": "Breaks into list", "upper()": "UPPERCASE", "strip()": "Remove whitespace"},
-             explanation="These are basic string methods."),
+             correct_answer={"len()": "Ұзындықты қайтарады", "split()": "Тізімге бөледі", "upper()": "БАС ӘРІП", "strip()": "Бос орынды кеседі"},
+             explanation="Бұл негізгі жол әдістері."),
     Question(test_id=test2.id, question_type="choose_code", order=5,
-             text="Which code counts words in a sentence?",
+             text="Сөйлемдегі сөздерді санайтын қай код дұрыс?",
              options=[
-                 "len(sentence.split())",
-                 "sentence.count(' ')",
-                 "len(sentence)",
-                 "sentence.words()",
+                 "len(сөйлем.split())",
+                 "сөйлем.count(' ')",
+                 "len(сөйлем)",
+                 "сөйлем.words()",
              ],
-             correct_answer="len(sentence.split())",
-             explanation="split() breaks the sentence into words, len() counts them."),
+             correct_answer="len(сөйлем.split())",
+             explanation="split() сөйлемді сөздерге бөледі, len() оларды санайды."),
 ]
 db.add_all(test2_questions)
 
-# Test 3: Regex
-test3 = Test(title="Regex Basics", module_id=modules[5].id, difficulty="hard")
+# Тест 3: Тұрақты өрнектер
+test3 = Test(title="Тұрақты өрнектер тесті", module_id=modules[5].id, difficulty="hard")
 db.add(test3)
 db.flush()
 
 test3_questions = [
     Question(test_id=test3.id, question_type="mcq", order=1,
-             text="What does \\d+ match?",
-             options=["One digit", "One or more digits", "Zero or more digits", "Letters"],
-             correct_answer="One or more digits",
-             explanation="\\d matches a digit, + means one or more."),
+             text="\\d+ нені сәйкестендіреді?",
+             options=["Бір цифр", "Бір немесе одан көп цифр", "Нөл немесе одан көп цифр", "Әріптер"],
+             correct_answer="Бір немесе одан көп цифр",
+             explanation="\\d бір цифрды сәйкестендіреді, + бір немесе одан көп дегенді білдіреді."),
     Question(test_id=test3.id, question_type="mcq", order=2,
-             text="Which function returns all matches as a list?",
+             text="Барлық сәйкестіктерді тізім ретінде қайтаратын функция қайсы?",
              options=["re.search()", "re.match()", "re.findall()", "re.split()"],
              correct_answer="re.findall()",
-             explanation="findall() returns all non-overlapping matches."),
+             explanation="findall() қабаттаспайтын барлық сәйкестіктерді қайтарады."),
     Question(test_id=test3.id, question_type="choose_code", order=3,
-             text="Which code finds all emails in text?",
+             text="Мәтіндегі барлық email-дерді табатын код қайсы?",
              options=[
-                 "re.findall(r'[\\w.]+@[\\w.]+', text)",
-                 "re.search(r'email', text)",
-                 "text.find('@')",
-                 "re.match(r'@', text)",
+                 "re.findall(r'[\\w.]+@[\\w.]+', мәтін)",
+                 "re.search(r'email', мәтін)",
+                 "мәтін.find('@')",
+                 "re.match(r'@', мәтін)",
              ],
-             correct_answer="re.findall(r'[\\w.]+@[\\w.]+', text)",
-             explanation="The regex pattern matches email-like strings."),
+             correct_answer="re.findall(r'[\\w.]+@[\\w.]+', мәтін)",
+             explanation="Regex үлгісі email-тәрізді жолдарды сәйкестендіреді."),
 ]
 db.add_all(test3_questions)
 
 # ── Code Tasks ─────────────────────────────────────────
 task1 = CodeTask(
-    title="Count Words in Text",
-    description="Write a Python program that reads a text from input and prints the number of words.\n\nA word is any sequence of characters separated by spaces.\n\n**Example:**\nInput: `Hello World Python`\nOutput: `3`",
+    title="Мәтіндегі сөздерді санау",
+    description="""Мәтінді оқитын және сөздер санын шығаратын Python бағдарламасын жазыңыз.
+
+Сөз — бос орындармен бөлінген символдардың кез келген тізбегі.
+
+**Мысал:**
+Кіріс: `Сәлем Әлем Python`
+Шығыс: `3`""",
     module_id=modules[3].id,
     difficulty="easy",
-    starter_code='text = input()\n# Your code here\n',
+    starter_code='мәтін = input()\n# Кодыңызды осында жазыңыз\n',
     test_cases=[
-        {"input": "Hello World Python", "expected_output": "3"},
-        {"input": "one", "expected_output": "1"},
-        {"input": "This is a test sentence", "expected_output": "5"},
-        {"input": "  spaces   everywhere  ", "expected_output": "2"},
+        {"input": "Сәлем Әлем Python", "expected_output": "3"},
+        {"input": "бір", "expected_output": "1"},
+        {"input": "Бұл сынақ сөйлемі", "expected_output": "3"},
+        {"input": "  бос  орындар  ", "expected_output": "2"},
         {"input": "", "expected_output": "0"},
     ],
 )
 
 task2 = CodeTask(
-    title="Reverse a String",
-    description="Write a program that reads a string and prints it reversed.\n\n**Example:**\nInput: `Hello`\nOutput: `olleH`",
+    title="Жолды кері айналдыру",
+    description="""Жолды оқитын және оны кері ретпен шығаратын бағдарлама жазыңыз.
+
+**Мысал:**
+Кіріс: `Сәлем`
+Шығыс: `меләС`""",
     module_id=modules[2].id,
     difficulty="easy",
-    starter_code='text = input()\n# Your code here\n',
+    starter_code='мәтін = input()\n# Кодыңызды осында жазыңыз\n',
     test_cases=[
-        {"input": "Hello", "expected_output": "olleH"},
+        {"input": "Сәлем", "expected_output": "меләС"},
         {"input": "Python", "expected_output": "nohtyP"},
         {"input": "abcde", "expected_output": "edcba"},
-        {"input": "a", "expected_output": "a"},
-        {"input": "racecar", "expected_output": "racecar"},
+        {"input": "а", "expected_output": "а"},
+        {"input": "казак", "expected_output": "казак"},
     ],
 )
 
 task3 = CodeTask(
-    title="Count Vowels",
-    description="Write a program that counts the number of vowels (a, e, i, o, u) in a given string. Case-insensitive.\n\n**Example:**\nInput: `Hello World`\nOutput: `3`",
+    title="Дауысты дыбыстарды санау",
+    description="""Берілген жолдағы дауысты дыбыстар (а, е, и, о, у, ә, і, ө, ү) санын есептейтін бағдарлама жазыңыз. Регистрге сезімтал емес.
+
+**Мысал:**
+Кіріс: `Сәлем Әлем`
+Шығыс: `4`""",
     module_id=modules[4].id,
     difficulty="medium",
-    starter_code='text = input()\n# Your code here\n',
+    starter_code='мәтін = input()\n# Кодыңызды осында жазыңыз\n',
     test_cases=[
-        {"input": "Hello World", "expected_output": "3"},
-        {"input": "AEIOU", "expected_output": "5"},
+        {"input": "Сәлем Әлем", "expected_output": "4"},
+        {"input": "АЕИОУ", "expected_output": "5"},
         {"input": "xyz", "expected_output": "0"},
-        {"input": "Python Programming", "expected_output": "4"},
-        {"input": "aEiOu", "expected_output": "5"},
+        {"input": "Python", "expected_output": "1"},
+        {"input": "аәеиіоөуү", "expected_output": "9"},
     ],
 )
 
@@ -696,12 +708,12 @@ db.add_all([task1, task2, task3])
 
 # ── Badges ─────────────────────────────────────────────
 badges_data = [
-    ("first_lesson", "First Lesson", "Completed your first lesson", "📖"),
-    ("first_test", "First Test", "Completed your first test", "📝"),
-    ("five_lessons", "Knowledge Seeker", "Completed 5 lessons", "🎯"),
-    ("three_tests_passed", "Test Master", "Passed 3 tests", "🏆"),
-    ("perfect_score", "Perfect Score", "Got 100% on a test", "⭐"),
-    ("seven_day_streak", "Week Warrior", "Maintained a 7-day streak", "🔥"),
+    ("first_lesson", "Алғашқы сабақ", "Алғашқы сабағыңызды аяқтадыңыз", "📖"),
+    ("first_test", "Алғашқы тест", "Алғашқы тестіңізді тапсырдыңыз", "📝"),
+    ("five_lessons", "Білім іздеуші", "5 сабақты аяқтадыңыз", "🎯"),
+    ("three_tests_passed", "Тест шебері", "3 тестті тапсырдыңыз", "🏆"),
+    ("perfect_score", "Мінсіз нәтиже", "Тестте 100% алдыңыз", "⭐"),
+    ("seven_day_streak", "Апта жауынгері", "7 күндік серияны сақтадыңыз", "🔥"),
 ]
 for key, title, desc, icon in badges_data:
     db.add(Badge(key=key, title=title, description=desc, icon=icon))
@@ -709,10 +721,10 @@ for key, title, desc, icon in badges_data:
 db.commit()
 db.close()
 
-print("✅ Seed data created successfully!")
+print("✅ Деректер базасы сәтті толтырылды!")
 print()
-print("Login credentials:")
-print("  Teacher: teacher / teacher123")
-print("  Student: alice / alice123")
-print("  Student: bob / bob123")
-print("  Student: charlie / charlie123")
+print("Кіру деректері:")
+print("  Мұғалім: teacher / teacher123")
+print("  Оқушы: aisha / aisha123")
+print("  Оқушы: daniyar / daniyar123")
+print("  Оқушы: zarina / zarina123")

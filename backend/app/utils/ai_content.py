@@ -31,13 +31,13 @@ def _parse_json(text: str) -> dict:
 
 # ── Generate Test ──────────────────────────────────────
 
-def generate_test(module_title: str, difficulty: str, num_questions: int = 5, lang: str = "ru") -> dict:
+def generate_test(module_title: str, difficulty: str, num_questions: int = 5, lang: str = "kz") -> dict:
     """Generate a complete test with questions using GPT."""
     lang_instruction = {
         "ru": "Write ALL question texts and options in Russian.",
         "en": "Write ALL question texts and options in English.",
         "kz": "Write ALL question texts and options in Kazakh.",
-    }.get(lang, "Write in Russian.")
+    }.get(lang, "Write in Kazakh.")
 
     system = f"""You are an expert Python programming teacher creating tests for students.
 {lang_instruction}
@@ -97,13 +97,13 @@ Return this exact JSON structure:
 
 # ── Generate Lesson ────────────────────────────────────
 
-def generate_lesson(module_title: str, topic: str, lang: str = "ru") -> dict:
+def generate_lesson(module_title: str, topic: str, lang: str = "kz") -> dict:
     """Generate a complete lesson with rich markdown content."""
     lang_instruction = {
         "ru": "Write ALL content in Russian.",
         "en": "Write ALL content in English.",
         "kz": "Write ALL content in Kazakh.",
-    }.get(lang, "Write in Russian.")
+    }.get(lang, "Write in Kazakh.")
 
     system = f"""You are an expert Python programming teacher writing educational lessons.
 {lang_instruction}
@@ -134,13 +134,13 @@ Return this exact JSON structure:
 
 # ── Generate Code Task ─────────────────────────────────
 
-def generate_code_task(module_title: str, difficulty: str, lang: str = "ru") -> dict:
+def generate_code_task(module_title: str, difficulty: str, lang: str = "kz") -> dict:
     """Generate a code task with test cases."""
     lang_instruction = {
         "ru": "Write task title and description in Russian.",
         "en": "Write task title and description in English.",
         "kz": "Write task title and description in Kazakh.",
-    }.get(lang, "Write in Russian.")
+    }.get(lang, "Write in Kazakh.")
 
     system = f"""You are an expert Python programming teacher creating coding exercises.
 {lang_instruction}

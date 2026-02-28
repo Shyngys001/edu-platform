@@ -6,12 +6,6 @@ import { FiPlus, FiTrash2, FiEdit2, FiZap } from 'react-icons/fi';
 
 const GRADES = [6, 7, 8, 9, 10, 11];
 
-const LANG_OPTIONS = [
-  { value: 'ru', label: '🇷🇺 Русский' },
-  { value: 'en', label: '🇬🇧 English' },
-  { value: 'kz', label: '🇰🇿 Қазақша' },
-];
-
 const TEMPLATES = {
   basic: {
     title: 'Sum Two Numbers',
@@ -103,7 +97,6 @@ export default function CodeTasksCMS() {
   const [form, setForm] = useState(emptyForm);
   const [testCases, setTestCases] = useState([{ input: '', expected_output: '' }]);
   const [aiLoading, setAiLoading] = useState(false);
-  const [aiLang, setAiLang] = useState('ru');
   const t = useT();
 
   useEffect(() => { load(); }, []);
@@ -191,7 +184,7 @@ export default function CodeTasksCMS() {
       const data = await api.post('/teacher/ai/generate-task', {
         module_id: form.module_id ? parseInt(form.module_id) : null,
         difficulty: form.difficulty,
-        lang: aiLang,
+        lang: 'kz',
       });
       setForm(f => ({
         ...f,
@@ -359,24 +352,7 @@ export default function CodeTasksCMS() {
                     {aiLoading ? t('generating') : t('generate')}
                   </button>
                 </div>
-                <div style={{ display: 'flex', gap: 6 }}>
-                  {LANG_OPTIONS.map(lo => (
-                    <button
-                      key={lo.value}
-                      type="button"
-                      onClick={() => setAiLang(lo.value)}
-                      style={{
-                        padding: '4px 12px', borderRadius: 6, border: 'none', cursor: 'pointer',
-                        fontSize: '0.8rem', fontWeight: 600,
-                        background: aiLang === lo.value ? 'white' : 'rgba(255,255,255,0.2)',
-                        color: aiLang === lo.value ? '#764ba2' : 'white',
-                        transition: 'all 0.2s',
-                      }}
-                    >
-                      {lo.label}
-                    </button>
-                  ))}
-                </div>
+                <div style={{ fontSize: '0.78rem', opacity: 0.85 }}>🇰🇿 Мазмұн қазақ тілінде жасалады</div>
               </div>
             )}
 
