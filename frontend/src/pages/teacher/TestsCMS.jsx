@@ -199,14 +199,14 @@ export default function TestsCMS() {
         <div className="table-wrap">
           <table>
             <thead>
-              <tr><th>Title</th><th>{t('gradeLabel')}</th><th>{t('difficulty')}</th><th>{t('questions')}</th><th>{t('actions')}</th></tr>
+              <tr><th>Атауы</th><th>{t('gradeLabel')}</th><th>{t('difficulty')}</th><th>{t('questions')}</th><th>{t('actions')}</th></tr>
             </thead>
             <tbody>
               {tests.map(tt => (
                 <tr key={tt.id}>
                   <td style={{ fontWeight: 600 }}>{tt.title}</td>
                   <td><span className="badge badge-primary">{t('gradeLabel')} {tt.grade || 6}</span></td>
-                  <td><span className={`badge badge-${tt.difficulty === 'easy' ? 'success' : tt.difficulty === 'hard' ? 'danger' : 'warning'}`}>{tt.difficulty}</span></td>
+                  <td><span className={`badge badge-${tt.difficulty === 'easy' ? 'success' : tt.difficulty === 'hard' ? 'danger' : 'warning'}`}>{t(tt.difficulty)}</span></td>
                   <td>{tt.question_count}</td>
                   <td>
                     <div style={{ display: 'flex', gap: 4 }}>
@@ -275,7 +275,7 @@ export default function TestsCMS() {
             <form onSubmit={handleCreate}>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
                 <div className="form-group">
-                  <label>Title</label>
+                  <label>Атауы</label>
                   <input className="form-input" value={form.title} onChange={e => setForm(f => ({ ...f, title: e.target.value }))} required />
                 </div>
                 <div className="form-group">

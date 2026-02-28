@@ -50,7 +50,7 @@ function ChartTooltip({ active, payload, label }) {
       boxShadow: 'var(--shadow-md)', fontSize: '0.82rem',
     }}>
       <p style={{ fontWeight: 600, color: 'var(--text-1)', marginBottom: 2 }}>{label}</p>
-      <p style={{ color: 'var(--brand)' }}>Score: {payload[0].value}%</p>
+      <p style={{ color: 'var(--brand)' }}>Ұпай: {payload[0].value}%</p>
     </div>
   );
 }
@@ -134,28 +134,28 @@ export default function TeacherDashboard() {
         <div className="stat-card">
           <div className="label">{t('totalStudents')}</div>
           <div className="value">{animStudents}</div>
-          <div className="sub">Active learners</div>
+          <div className="sub">Белсенді оқушылар</div>
           <div className="stat-icon"><FiUsers /></div>
         </div>
 
         <div className="stat-card purple">
           <div className="label">{t('averageScore')}</div>
           <div className="value">{animAvg}%</div>
-          <div className="sub">Overall average</div>
+          <div className="sub">Жалпы орташа</div>
           <div className="stat-icon"><FiBarChart2 /></div>
         </div>
 
         <div className="stat-card success">
-          <div className="label">High Performers</div>
+          <div className="label">Үздік оқушылар</div>
           <div className="value">{highCount}</div>
-          <div className="sub">≥ 80% score</div>
+          <div className="sub">≥ 80% ұпай</div>
           <div className="stat-icon"><FiTrendingUp /></div>
         </div>
 
         <div className="stat-card warning">
-          <div className="label">Need Attention</div>
+          <div className="label">Назар қажет</div>
           <div className="value">{lowCount}</div>
-          <div className="sub">&lt; 50% score</div>
+          <div className="sub">&lt; 50% ұпай</div>
           <div className="stat-icon"><FiActivity /></div>
         </div>
       </div>
@@ -166,8 +166,8 @@ export default function TeacherDashboard() {
         {/* Bar Chart */}
         <div className="card">
           <div className="card-header">
-            Recent Test Scores
-            <span className="badge badge-neutral">{data.recent_activity.length} results</span>
+            Соңғы тест нәтижелері
+            <span className="badge badge-neutral">{data.recent_activity.length} нәтиже</span>
           </div>
           {chartData.length === 0 ? (
             <div className="empty-state" style={{ padding: 32 }}>
@@ -200,12 +200,12 @@ export default function TeacherDashboard() {
 
         {/* Score Distribution */}
         <div className="card">
-          <div className="card-header">Score Distribution</div>
+          <div className="card-header">Ұпай бөлінісі</div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
             {[
-              { label: 'High (≥80%)', count: highCount, total: recentScores.length, color: 'var(--success)', bg: 'var(--success-bg)' },
-              { label: 'Medium (50–79%)', count: midCount, total: recentScores.length, color: 'var(--warning)', bg: 'var(--warning-bg)' },
-              { label: 'Low (<50%)', count: lowCount, total: recentScores.length, color: 'var(--error)', bg: 'var(--error-bg)' },
+              { label: 'Жоғары (≥80%)', count: highCount, total: recentScores.length, color: 'var(--success)', bg: 'var(--success-bg)' },
+              { label: 'Орташа (50–79%)', count: midCount, total: recentScores.length, color: 'var(--warning)', bg: 'var(--warning-bg)' },
+              { label: 'Төмен (<50%)', count: lowCount, total: recentScores.length, color: 'var(--error)', bg: 'var(--error-bg)' },
             ].map(row => (
               <div key={row.label}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 6, fontSize: '0.82rem' }}>
@@ -235,7 +235,7 @@ export default function TeacherDashboard() {
 
           {/* Quick links */}
           <div style={{ marginTop: 24, display: 'flex', flexDirection: 'column', gap: 8 }}>
-            <div className="card-section-title">Quick Access</div>
+            <div className="card-section-title">Жылдам кіру</div>
             {[
               { to: '/teacher/analytics', label: t('analytics') },
               { to: '/teacher/students',  label: t('students') },

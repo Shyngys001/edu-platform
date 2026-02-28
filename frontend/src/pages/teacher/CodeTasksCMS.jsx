@@ -289,7 +289,7 @@ export default function CodeTasksCMS() {
           <table>
             <thead>
               <tr>
-                <th>Title</th>
+                <th>Атауы</th>
                 <th>{t('gradeLabel')}</th>
                 <th>{t('difficulty')}</th>
                 <th>{t('testCases')}</th>
@@ -431,7 +431,7 @@ export default function CodeTasksCMS() {
               </div>
 
               <div className="form-group">
-                <label>Title *</label>
+                <label>Атауы *</label>
                 <input className="form-input" value={form.title} onChange={e => setForm(f => ({ ...f, title: e.target.value }))} required />
               </div>
               <div className="form-group">

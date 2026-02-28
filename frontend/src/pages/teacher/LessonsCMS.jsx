@@ -145,7 +145,7 @@ export default function LessonsCMS() {
         <div className="table-wrap">
           <table>
             <thead>
-              <tr><th>Title</th><th>{t('module')}</th><th>{t('gradeLabel')}</th><th>{t('order')}</th><th>Video</th><th>{t('actions')}</th></tr>
+              <tr><th>Атауы</th><th>{t('module')}</th><th>{t('gradeLabel')}</th><th>{t('order')}</th><th>Бейне</th><th>{t('actions')}</th></tr>
             </thead>
             <tbody>
               {lessons.map(l => (
@@ -154,7 +154,7 @@ export default function LessonsCMS() {
                   <td>{modules.find(m => m.id === l.module_id)?.title || '-'}</td>
                   <td><span className="badge badge-primary">{t('gradeLabel')} {l.grade || 6}</span></td>
                   <td>{l.order}</td>
-                  <td>{l.video_url ? 'Yes' : '-'}</td>
+                  <td>{l.video_url ? 'Иә' : '-'}</td>
                   <td>
                     <div style={{ display: 'flex', gap: 4 }}>
                       <button className="btn btn-secondary btn-sm" onClick={() => openEdit(l)}><FiEdit2 /></button>
@@ -205,7 +205,7 @@ export default function LessonsCMS() {
                 </select>
               </div>
               <div className="form-group">
-                <label>Title</label>
+                <label>Атауы</label>
                 <input className="form-input" value={form.title} onChange={e => setForm(f => ({ ...f, title: e.target.value }))} required />
               </div>
               <div className="form-group">

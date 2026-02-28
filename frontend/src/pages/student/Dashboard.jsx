@@ -205,7 +205,7 @@ export default function StudentDashboard() {
           {profile.badges.length === 0 ? (
             <div className="empty-state" style={{ padding: '24px 16px' }}>
               <div className="icon">🏅</div>
-              <p>Complete lessons and tests to earn badges!</p>
+              <p>Белгі алу үшін сабақтар мен тесттерді аяқтаңыз!</p>
             </div>
           ) : (
             <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
@@ -233,7 +233,7 @@ export default function StudentDashboard() {
       </div>
 
       {/* Quick Actions */}
-      <div className="card-section-title">Quick Actions</div>
+      <div className="card-section-title">Жылдам кіру</div>
       <div className="dashboard-cards-grid" style={{ marginBottom: 8 }}>
         <Link
           to="/student/lessons"
