@@ -47,28 +47,28 @@ export default function Register() {
             <span className="auth-left-logo-text">PyStart</span>
           </div>
 
-          <h2>Start Your Python Journey Today.</h2>
+          <h2>Python сапарыңды<br />бүгін бастай.</h2>
           <p>
-            Create your account and get instant access to interactive lessons,
-            practice tests, and a real coding environment — all for free.
+            Аккаунт жасап, интерактивті сабақтарға, тесттерге және
+            нақты код редакторына бірден қол жеткіз — тегін.
           </p>
 
           <div className="auth-features">
             <div className="auth-feature-item">
               <div className="auth-feature-icon">⚡</div>
-              <span>Get started in under 2 minutes</span>
+              <span>2 минутта тіркелу</span>
             </div>
             <div className="auth-feature-item">
               <div className="auth-feature-icon">🎯</div>
-              <span>Personalized curriculum for your grade</span>
+              <span>Сыныбыңа арналған жеке бағдарлама</span>
             </div>
             <div className="auth-feature-item">
               <div className="auth-feature-icon">💬</div>
-              <span>Chat with classmates and your teacher</span>
+              <span>Сыныптастармен және мұғаліммен чат</span>
             </div>
             <div className="auth-feature-item">
               <div className="auth-feature-icon">📈</div>
-              <span>Track your progress with detailed analytics</span>
+              <span>Прогресіңді аналитика арқылы бақыла</span>
             </div>
           </div>
         </div>
@@ -97,7 +97,7 @@ export default function Register() {
                 <LangSwitcher />
               </div>
             </div>
-            <div className="auth-kz-badge" style={{ marginTop: 8 }}>🇰🇿 Made in Kazakhstan</div>
+            <div className="auth-kz-badge" style={{ marginTop: 8 }}>🇰🇿 Қазақстанда жасалған</div>
           </div>
 
           <form onSubmit={handleSubmit}>
@@ -157,7 +157,7 @@ export default function Register() {
                   className="form-input"
                   value={form.grade}
                   onChange={e => update('grade', e.target.value)}
-                  placeholder="e.g. 10A"
+                  placeholder="мыс. 10А"
                 />
               </div>
               <div className="form-group" style={{ marginBottom: 0 }}>

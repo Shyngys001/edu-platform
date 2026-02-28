@@ -44,28 +44,28 @@ export default function Login() {
             <span className="auth-left-logo-text">PyStart</span>
           </div>
 
-          <h2>Learn Python.<br />Build Your Future.</h2>
+          <h2>Python үйрен.<br />Болашағыңды жаса.</h2>
           <p>
-            An interactive platform for students in Kazakhstan to master
-            programming through guided lessons, live coding challenges, and AI assistance.
+            Қазақстан оқушылары үшін Python бағдарламалауды үйренуге арналған
+            интерактивті платформа — сабақтар, тапсырмалар және ЖИ көмекші.
           </p>
 
           <div className="auth-features">
             <div className="auth-feature-item">
               <div className="auth-feature-icon">📚</div>
-              <span>Structured Python curriculum for grades 6–11</span>
+              <span>6–11-сынып оқушыларына арналған Python курсы</span>
             </div>
             <div className="auth-feature-item">
               <div className="auth-feature-icon">🤖</div>
-              <span>AI-powered coding assistant</span>
+              <span>ЖИ негізіндегі бағдарламалау көмекшісі</span>
             </div>
             <div className="auth-feature-item">
               <div className="auth-feature-icon">🏆</div>
-              <span>Leaderboard & achievement badges</span>
+              <span>Рейтинг кестесі және жетістік белгілері</span>
             </div>
             <div className="auth-feature-item">
               <div className="auth-feature-icon">🇰🇿</div>
-              <span>Made in Kazakhstan, supports KZ / RU / EN</span>
+              <span>Қазақстанда жасалған, қазақ тілінде</span>
             </div>
           </div>
         </div>
@@ -94,7 +94,7 @@ export default function Login() {
                 <LangSwitcher />
               </div>
             </div>
-            <div className="auth-kz-badge" style={{ marginTop: 8 }}>🇰🇿 Made in Kazakhstan</div>
+            <div className="auth-kz-badge" style={{ marginTop: 8 }}>🇰🇿 Қазақстанда жасалған</div>
           </div>
 
           <form onSubmit={handleSubmit}>
