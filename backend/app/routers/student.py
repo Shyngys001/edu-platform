@@ -294,6 +294,15 @@ def get_task(task_id: int, db: Session = Depends(get_db), user: User = Depends(_
     }
 
 
+@router.post("/code/run")
+def run_code(req: dict, user: User = Depends(_student)):
+    """Run code with provided stdin and return output immediately."""
+    code = req.get("code", "")
+    stdin = req.get("stdin", "")
+    passed, output, error = _run_code_safe(code, stdin)
+    return {"output": output, "error": error, "passed": passed}
+
+
 @router.post("/tasks/{task_id}/submit", response_model=CodeAttemptOut)
 def submit_code(task_id: int, req: CodeSubmit, user: User = Depends(_student), db: Session = Depends(get_db)):
     """Submit code for auto-check. Runs against test cases server-side with sandboxing."""
