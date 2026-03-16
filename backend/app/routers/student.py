@@ -272,9 +272,11 @@ def list_tasks(db: Session = Depends(get_db), user: User = Depends(_student)):
         best = db.query(CodeAttempt).filter(
             CodeAttempt.user_id == user.id, CodeAttempt.task_id == t.id
         ).order_by(CodeAttempt.score.desc()).first()
+        module = db.query(Module).filter(Module.id == t.module_id).first() if t.module_id else None
         result.append({
             "id": t.id, "title": t.title, "difficulty": t.difficulty,
-            "grade": t.grade, "topic_id": t.topic_id,
+            "grade": t.grade, "topic_id": t.topic_id, "module_id": t.module_id,
+            "module_title": module.title if module else None,
             "description": t.description, "starter_code": t.starter_code,
             "best_score": best.score if best else None,
             "max_score": len(t.test_cases),
