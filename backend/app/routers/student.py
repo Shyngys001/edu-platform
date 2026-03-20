@@ -265,8 +265,8 @@ def test_history(user: User = Depends(_student), db: Session = Depends(get_db)):
 @router.get("/tasks")
 def list_tasks(db: Session = Depends(get_db), user: User = Depends(_student)):
     student_grade = parse_grade_num(user.grade)
-    max_unlocked = max(user.max_unlocked_grade or 0, student_grade)
-    tasks = db.query(CodeTask).filter(CodeTask.grade <= max_unlocked).all()
+    max_unlocked = max(user.max_unlocked_grade or 0, student_grade, 6)
+    tasks = db.query(CodeTask).filter(func.coalesce(CodeTask.grade, 6) <= max_unlocked).all()
     result = []
     for t in tasks:
         best = db.query(CodeAttempt).filter(
@@ -457,8 +457,8 @@ def recommendations(user: User = Depends(_student), db: Session = Depends(get_db
             weakest = None
 
     student_grade = parse_grade_num(user.grade)
-    max_unlocked = max(user.max_unlocked_grade or 0, student_grade)
-    all_tasks = db.query(CodeTask).filter(CodeTask.grade <= max_unlocked).all()
+    max_unlocked = max(user.max_unlocked_grade or 0, student_grade, 6)
+    all_tasks = db.query(CodeTask).filter(func.coalesce(CodeTask.grade, 6) <= max_unlocked).all()
 
     perfect_ids = {a.task_id for a in attempts if a.score == a.max_score and a.max_score > 0}
     incomplete = [t for t in all_tasks if t.id not in perfect_ids]
