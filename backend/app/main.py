@@ -14,7 +14,7 @@ from app.routers import auth, student, teacher
 
 
 def run_migrations():
-    """Add new columns to existing tables without data loss (SQLite safe)."""
+    """Add new columns to existing tables without data loss (SQLite + PostgreSQL safe)."""
     migrations = [
         ("users", "max_unlocked_grade", "INTEGER DEFAULT 6"),
         ("lessons", "grade", "INTEGER DEFAULT 6"),
@@ -29,13 +29,14 @@ def run_migrations():
         ("group_messages", "file_url", "VARCHAR(500)"),
         ("code_attempts", "error_type", "VARCHAR(20)"),
     ]
-    with engine.connect() as conn:
-        for table, col, definition in migrations:
-            try:
+    for table, col, definition in migrations:
+        # Each migration gets its own connection so a failure doesn't abort the rest
+        try:
+            with engine.connect() as conn:
                 conn.execute(text(f"ALTER TABLE {table} ADD COLUMN {col} {definition}"))
                 conn.commit()
-            except Exception:
-                pass  # column already exists
+        except Exception:
+            pass  # column already exists or table not yet created (create_all handles it)
 
 
 # Run migrations then create any new tables
