@@ -20,16 +20,18 @@ export default function CodeTasks() {
   const navigate = useNavigate();
 
   useEffect(() => {
-    Promise.all([
-      api.get('/student/tasks'),
-      api.get('/student/grades'),
-    ]).then(([tk, g]) => {
-      setTasks(tk);
-      setGradeInfo(g);
-      // Auto-open first module group
-      const firstKey = getFirstModuleKey(tk);
-      if (firstKey) setOpenModules({ [firstKey]: true });
-    }).catch(e => toast.error(e.message)).finally(() => setLoading(false));
+    api.get('/student/tasks')
+      .then(tk => {
+        setTasks(tk);
+        const firstKey = getFirstModuleKey(tk);
+        if (firstKey) setOpenModules({ [firstKey]: true });
+      })
+      .catch(e => toast.error(e.message))
+      .finally(() => setLoading(false));
+
+    api.get('/student/grades')
+      .then(g => setGradeInfo(g))
+      .catch(() => {});
   }, []);
 
   function getFirstModuleKey(taskList) {
