@@ -210,6 +210,7 @@ class CodeAttempt(Base):
     score = Column(Float, default=0)
     max_score = Column(Float, default=0)
     results = Column(JSON, nullable=True)  # per-case pass/fail
+    error_type = Column(String(20), nullable=True)  # syntax|variable|loop|condition|io|logic
     created_at = Column(DateTime, default=datetime.datetime.utcnow)
 
     user = relationship("User", back_populates="code_attempts")

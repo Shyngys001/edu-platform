@@ -27,6 +27,7 @@ def run_migrations():
         ("direct_messages", "file_url", "VARCHAR(500)"),
         ("group_messages", "message_type", "VARCHAR(20) DEFAULT 'text'"),
         ("group_messages", "file_url", "VARCHAR(500)"),
+        ("code_attempts", "error_type", "VARCHAR(20)"),
     ]
     with engine.connect() as conn:
         for table, col, definition in migrations:

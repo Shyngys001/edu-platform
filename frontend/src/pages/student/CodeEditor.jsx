@@ -181,6 +181,22 @@ export default function CodeEditorPage() {
                 </div>
               </div>
 
+              {/* Error type banner */}
+              {!allPassed && results.error_type && (
+                <div style={{
+                  padding: '8px 16px', borderBottom: '1px solid var(--border)',
+                  background: '#FFFBEB', display: 'flex', alignItems: 'center', gap: 8, fontSize: '0.8rem',
+                }}>
+                  <span>🗺️</span>
+                  <span style={{ color: '#92400E' }}>
+                    Анықталған қате түрі: <strong>{{
+                      syntax: 'Синтаксис', variable: 'Айнымалы', loop: 'Цикл',
+                      condition: 'Шартты оператор', io: 'Енгізу/Шығару', logic: 'Логика',
+                    }[results.error_type] || results.error_type}</strong>
+                  </span>
+                </div>
+              )}
+
               {/* Test cases */}
               <div style={{ padding: '8px 12px', display: 'flex', flexDirection: 'column', gap: 6 }}>
                 {results.results?.map((r, i) => (

@@ -332,13 +332,14 @@ def submit_code(task_id: int, req: CodeSubmit, user: User = Depends(_student), d
             "error": error,
         })
 
+    error_type = _categorize_error_type(req.code, results)
     points_earned = int(score / len(task.test_cases) * 15) if task.test_cases else 0
     user.points += points_earned
 
     attempt = CodeAttempt(
         user_id=user.id, task_id=task_id,
         code=req.code, score=score, max_score=len(task.test_cases),
-        results=results,
+        results=results, error_type=error_type,
     )
     db.add(attempt)
     db.commit()
@@ -360,6 +361,140 @@ def task_history(user: User = Depends(_student), db: Session = Depends(get_db)):
         }
         for a in attempts
     ]
+
+
+_ERROR_TYPE_KZ = {
+    "syntax": "Синтаксис",
+    "variable": "Айнымалы",
+    "loop": "Цикл",
+    "condition": "Шартты оператор",
+    "io": "Енгізу/Шығару",
+    "logic": "Логика",
+}
+
+_ERROR_KEYWORDS = {
+    "loop": ["цикл", "loop", "for ", "while "],
+    "variable": ["айнымалы", "variable", "деректер тип"],
+    "syntax": ["синтаксис", "syntax", "негіз"],
+    "condition": ["шарт", "condition"],
+    "io": ["енгізу", "шығару", "input", "output"],
+    "logic": ["логика", "алгоритм", "санау", "count", "reverse", "кері"],
+}
+
+
+def _categorize_error_type(code: str, results: list) -> str | None:
+    """Determine the dominant error type from submission results."""
+    if not results or all(r.get("passed") for r in results):
+        return None
+    failed = [r for r in results if not r.get("passed")]
+    errors = " ".join((r.get("error") or "") for r in failed).lower()
+
+    if "syntaxerror" in errors or "indentationerror" in errors:
+        return "syntax"
+    if "nameerror" in errors or "unboundlocalerror" in errors or "attributeerror" in errors:
+        return "variable"
+    if "timeout" in errors or "time limit" in errors:
+        return "loop"
+    if "typeerror" in errors or "valueerror" in errors:
+        return "io"
+    if "indexerror" in errors or "keyerror" in errors:
+        return "variable"
+
+    # Wrong answer — infer from code structure
+    c = code.lower()
+    if "for " in c or "while " in c:
+        return "loop"
+    if " if " in c or "\nif " in c or "elif " in c:
+        return "condition"
+    if "input(" in c or "print(" in c:
+        return "io"
+    return "logic"
+
+
+@router.get("/error-map")
+def error_map(user: User = Depends(_student), db: Session = Depends(get_db)):
+    """Return student's error type statistics."""
+    attempts = db.query(CodeAttempt).filter(CodeAttempt.user_id == user.id).all()
+    counts = {"syntax": 0, "variable": 0, "loop": 0, "condition": 0, "logic": 0, "io": 0}
+    total_failed = 0
+
+    for a in attempts:
+        et = getattr(a, "error_type", None)
+        if et and a.score < a.max_score and et in counts:
+            counts[et] += 1
+            total_failed += 1
+
+    weakest = None
+    if any(counts.values()):
+        weakest = max(counts, key=counts.get)
+        if counts[weakest] == 0:
+            weakest = None
+
+    return {
+        "error_counts": counts,
+        "weakest": weakest,
+        "weakest_label": _ERROR_TYPE_KZ.get(weakest, "") if weakest else "",
+        "total_attempts": len(attempts),
+        "total_failed": total_failed,
+    }
+
+
+@router.get("/recommendations")
+def recommendations(user: User = Depends(_student), db: Session = Depends(get_db)):
+    """Return personalized task recommendations based on weak error types."""
+    attempts = db.query(CodeAttempt).filter(CodeAttempt.user_id == user.id).all()
+    counts = {"syntax": 0, "variable": 0, "loop": 0, "condition": 0, "logic": 0, "io": 0}
+
+    for a in attempts:
+        et = getattr(a, "error_type", None)
+        if et and a.score < a.max_score and et in counts:
+            counts[et] += 1
+
+    weakest = None
+    if any(counts.values()):
+        weakest = max(counts, key=counts.get)
+        if counts[weakest] == 0:
+            weakest = None
+
+    student_grade = parse_grade_num(user.grade)
+    max_unlocked = max(user.max_unlocked_grade or 0, student_grade)
+    all_tasks = db.query(CodeTask).filter(CodeTask.grade <= max_unlocked).all()
+
+    perfect_ids = {a.task_id for a in attempts if a.score == a.max_score and a.max_score > 0}
+    incomplete = [t for t in all_tasks if t.id not in perfect_ids]
+
+    recommended = []
+    if weakest and weakest in _ERROR_KEYWORDS:
+        keywords = _ERROR_KEYWORDS[weakest]
+        for task in incomplete:
+            text = (task.title + " " + (task.description or "")).lower()
+            if any(kw.lower() in text for kw in keywords):
+                recommended.append(task)
+
+    for task in incomplete:
+        if task not in recommended:
+            recommended.append(task)
+        if len(recommended) >= 3:
+            break
+    recommended = recommended[:3]
+
+    if weakest and counts.get(weakest, 0) > 0:
+        label = _ERROR_TYPE_KZ.get(weakest, weakest)
+        msg = f"«{label}» тақырыбы бойынша {counts[weakest]} қате жіберілді"
+    elif incomplete:
+        msg = "Аяқталмаған тапсырмалар бар — жалғастыр!"
+    else:
+        msg = "Барлық тапсырмаларды үздік орындадың! 🎉"
+
+    return {
+        "weakest": weakest,
+        "weakest_label": _ERROR_TYPE_KZ.get(weakest, "") if weakest else "",
+        "message": msg,
+        "tasks": [
+            {"id": t.id, "title": t.title, "difficulty": t.difficulty, "module_id": t.module_id}
+            for t in recommended
+        ],
+    }
 
 
 def _run_code_safe(code: str, stdin_input: str) -> tuple:

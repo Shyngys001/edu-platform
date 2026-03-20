@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { api } from '../../utils/api';
 import { useT } from '../../utils/i18n';
 import toast from 'react-hot-toast';
@@ -73,15 +73,35 @@ function ProgressRing({ pct, size = 80, stroke = 7 }) {
   );
 }
 
+const ERROR_LABELS = {
+  syntax: 'Синтаксис', variable: 'Айнымалы', loop: 'Цикл',
+  condition: 'Шартты оператор', io: 'Енгізу/Шығару', logic: 'Логика',
+};
+const ERROR_COLORS = {
+  syntax: '#F59E0B', variable: '#6366F1', loop: '#10B981',
+  condition: '#3B82F6', io: '#EC4899', logic: '#EF4444',
+};
+const DIFF_COLOR = { easy: 'success', medium: 'warning', hard: 'danger' };
+const DIFF_LABEL = { easy: 'Жеңіл', medium: 'Орташа', hard: 'Қиын' };
+
 export default function StudentDashboard() {
   const t = useT();
   const [profile, setProfile] = useState(null);
+  const [errorMap, setErrorMap] = useState(null);
+  const [recs, setRecs] = useState(null);
   const [loading, setLoading] = useState(true);
+  const navigate = useNavigate();
 
   useEffect(() => {
-    api.get('/student/profile')
-      .then(setProfile)
-      .catch(e => toast.error(e.message))
+    Promise.all([
+      api.get('/student/profile'),
+      api.get('/student/error-map').catch(() => null),
+      api.get('/student/recommendations').catch(() => null),
+    ]).then(([prof, em, rc]) => {
+      setProfile(prof);
+      setErrorMap(em);
+      setRecs(rc);
+    }).catch(e => toast.error(e.message))
       .finally(() => setLoading(false));
   }, []);
 
@@ -231,6 +251,94 @@ export default function StudentDashboard() {
           )}
         </div>
       </div>
+
+      {/* ── Қате картасы + Ұсыныстар ─────────────── */}
+      {errorMap && (
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16, marginBottom: 24 }}>
+
+          {/* Error map card */}
+          <div className="card">
+            <div className="card-header" style={{ marginBottom: 16 }}>
+              🗺️ Қате картасы
+              {errorMap.total_failed > 0 && (
+                <span className="badge badge-neutral" style={{ marginLeft: 8 }}>{errorMap.total_failed} қате</span>
+              )}
+            </div>
+            {errorMap.total_attempts === 0 ? (
+              <div style={{ color: 'var(--text-secondary)', fontSize: '0.85rem', textAlign: 'center', padding: '16px 0' }}>
+                Тапсырмаларды орындасаң, қате картасы пайда болады
+              </div>
+            ) : (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                {Object.entries(errorMap.error_counts).map(([type, count]) => {
+                  const maxCount = Math.max(...Object.values(errorMap.error_counts), 1);
+                  const pct = Math.round((count / maxCount) * 100);
+                  const isWeak = type === errorMap.weakest && count > 0;
+                  return (
+                    <div key={type}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.75rem', marginBottom: 3 }}>
+                        <span style={{ fontWeight: isWeak ? 700 : 500, color: isWeak ? ERROR_COLORS[type] : 'var(--text-1)' }}>
+                          {isWeak && '⚠️ '}{ERROR_LABELS[type]}
+                        </span>
+                        <span style={{ color: 'var(--text-secondary)' }}>{count}</span>
+                      </div>
+                      <div style={{ height: 6, background: 'var(--border)', borderRadius: 99, overflow: 'hidden' }}>
+                        <div style={{
+                          height: '100%', borderRadius: 99,
+                          width: `${pct}%`,
+                          background: ERROR_COLORS[type] || 'var(--brand)',
+                          transition: 'width 0.6s ease',
+                          opacity: count === 0 ? 0.2 : 1,
+                        }} />
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+
+          {/* Recommendations card */}
+          <div className="card">
+            <div className="card-header" style={{ marginBottom: 12 }}>🎯 Жеке маршрут</div>
+            {recs && (
+              <>
+                <p style={{ fontSize: '0.82rem', color: recs.weakest ? '#D97706' : 'var(--text-secondary)', marginBottom: 12, fontWeight: recs.weakest ? 600 : 400 }}>
+                  {recs.message}
+                </p>
+                {recs.tasks.length > 0 ? (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                    {recs.tasks.map(task => (
+                      <div
+                        key={task.id}
+                        onClick={() => navigate(`/student/tasks/${task.id}`)}
+                        style={{
+                          display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                          padding: '8px 12px', borderRadius: 8,
+                          background: 'var(--bg)', cursor: 'pointer',
+                          border: '1px solid var(--border)',
+                          transition: 'background 0.15s',
+                        }}
+                        onMouseEnter={e => e.currentTarget.style.background = 'var(--surface-2)'}
+                        onMouseLeave={e => e.currentTarget.style.background = 'var(--bg)'}
+                      >
+                        <span style={{ fontSize: '0.83rem', fontWeight: 600, color: 'var(--text-1)' }}>
+                          {task.title}
+                        </span>
+                        <span className={`badge badge-${DIFF_COLOR[task.difficulty] || 'secondary'}`} style={{ fontSize: '0.68rem', flexShrink: 0 }}>
+                          {DIFF_LABEL[task.difficulty] || task.difficulty}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <p style={{ fontSize: '0.82rem', color: 'var(--success)' }}>Барлық тапсырмаларды аяқтадың! 🎉</p>
+                )}
+              </>
+            )}
+          </div>
+        </div>
+      )}
 
       {/* Quick Actions */}
       <div className="card-section-title">Жылдам кіру</div>

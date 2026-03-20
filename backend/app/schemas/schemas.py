@@ -315,6 +315,7 @@ class CodeAttemptOut(BaseModel):
     score: float
     max_score: float
     results: Optional[Any] = None
+    error_type: Optional[str] = None
     created_at: Optional[datetime] = None
 
     class Config:
