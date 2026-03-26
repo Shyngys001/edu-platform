@@ -283,7 +283,7 @@ const translations = {
   downloadPDF: 'PDF жүктеу',
 
   // Grades & Topics
-  grade6to11: 'Сынып 6-11',
+  grade6to11: 'Сынып 6-10',
   gradeProgress: 'Сынып прогресі',
   topic: 'Тақырып',
   topicManagement: 'Тақырыптарды басқару',

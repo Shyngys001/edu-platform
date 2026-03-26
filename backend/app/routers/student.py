@@ -60,7 +60,7 @@ def _check_grade_unlock(user: User, db: Session):
         TestAttempt.test_id.in_([t.id for t in tests]),
     ).count()
 
-    if (completed_l + passed_t) >= total and target_grade < 11:
+    if (completed_l + passed_t) >= total and target_grade < 10:
         user.max_unlocked_grade = target_grade + 1
         db.commit()
 
@@ -655,12 +655,12 @@ def statistics(user: User = Depends(_student), db: Session = Depends(get_db)):
 
 @router.get("/grades")
 def grade_statuses(user: User = Depends(_student), db: Session = Depends(get_db)):
-    """Return grade 6-11 unlock status with completion percentage."""
+    """Return grade 6-10 unlock status with completion percentage."""
     student_grade = parse_grade_num(user.grade)
     max_unlocked = max(user.max_unlocked_grade or 0, student_grade)
 
     statuses = []
-    for g in range(6, 12):
+    for g in range(6, 11):
         lessons = db.query(Lesson).filter(Lesson.grade == g).all()
         tests = db.query(Test).filter(Test.grade == g).all()
         total = len(lessons) + len(tests)
@@ -692,7 +692,7 @@ def grade_statuses(user: User = Depends(_student), db: Session = Depends(get_db)
             "total_content": total,
         })
 
-    # Global final: unlocked if all grades 6-11 are 100%
+    # Global final: unlocked if all grades 6-10 are 100%
     all_done = all(s["completion_percent"] >= 100 for s in statuses)
     statuses.append({
         "grade": "global_final", "status": "unlocked" if all_done else "locked",

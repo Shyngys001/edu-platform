@@ -4,7 +4,7 @@ import { useT } from '../../utils/i18n';
 import toast from 'react-hot-toast';
 import { FiPlus, FiTrash2, FiEdit2, FiZap } from 'react-icons/fi';
 
-const GRADES = [6, 7, 8, 9, 10, 11];
+const GRADES = [6, 7, 8, 9, 10];
 
 const TEMPLATES = {
   basic: {

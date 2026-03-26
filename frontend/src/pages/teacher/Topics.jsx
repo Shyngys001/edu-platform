@@ -3,7 +3,7 @@ import { api } from '../../utils/api';
 import { useT } from '../../utils/i18n';
 import { FiPlus, FiEdit2, FiTrash2, FiList, FiStar, FiGlobe } from 'react-icons/fi';
 
-const GRADES = [6, 7, 8, 9, 10, 11];
+const GRADES = [6, 7, 8, 9, 10];
 
 const emptyForm = {
   title: '', description: '', grade: 6, order_index: 0,

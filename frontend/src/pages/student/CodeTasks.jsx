@@ -5,7 +5,7 @@ import { useT } from '../../utils/i18n';
 import toast from 'react-hot-toast';
 import { FiChevronDown, FiChevronUp, FiPlay, FiCheckCircle } from 'react-icons/fi';
 
-const GRADES = [6, 7, 8, 9, 10, 11];
+const GRADES = [6, 7, 8, 9, 10];
 
 const DIFF_COLOR = { easy: 'success', medium: 'warning', hard: 'danger' };
 const DIFF_LABEL = { easy: 'Жеңіл', medium: 'Орташа', hard: 'Қиын' };

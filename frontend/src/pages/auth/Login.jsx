@@ -53,7 +53,7 @@ export default function Login() {
           <div className="auth-features">
             <div className="auth-feature-item">
               <div className="auth-feature-icon">📚</div>
-              <span>6–11-сынып оқушыларына арналған Python курсы</span>
+              <span>6–10-сынып оқушыларына арналған Python курсы</span>
             </div>
             <div className="auth-feature-item">
               <div className="auth-feature-icon">🤖</div>

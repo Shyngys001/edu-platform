@@ -4,7 +4,7 @@ import { api } from '../../utils/api';
 import { useT } from '../../utils/i18n';
 import toast from 'react-hot-toast';
 
-const GRADES = [6, 7, 8, 9, 10, 11];
+const GRADES = [6, 7, 8, 9, 10];
 
 export default function Tests() {
   const t = useT();
