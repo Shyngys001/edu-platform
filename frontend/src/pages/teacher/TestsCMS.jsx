@@ -163,14 +163,13 @@ export default function TestsCMS() {
   }
 
   async function handleDelete(id, attemptCount) {
-    if (attemptCount > 0) {
-      toast.error(`Cannot delete: ${attemptCount} student attempt(s) exist. Edit instead.`);
-      return;
-    }
-    if (!confirm('Delete this test?')) return;
+    const msg = attemptCount > 0
+      ? `Бұл тестте ${attemptCount} оқушы нәтижесі бар. Жойғаннан кейін олар да өшеді. Жалғастыру?`
+      : 'Тестті жою керек пе?';
+    if (!confirm(msg)) return;
     try {
       await api.delete(`/teacher/tests/${id}`);
-      toast.success('Test deleted');
+      toast.success('Тест жойылды');
       load();
     } catch (e) {
       toast.error(e.message);
@@ -215,8 +214,7 @@ export default function TestsCMS() {
                       <button
                         className="btn btn-danger btn-sm"
                         onClick={() => handleDelete(tt.id, tt.attempt_count || 0)}
-                        title={tt.attempt_count > 0 ? `${tt.attempt_count} attempts` : t('delete')}
-                        style={{ opacity: tt.attempt_count > 0 ? 0.5 : 1 }}
+                        title={t('delete')}
                       ><FiTrash2 /></button>
                     </div>
                   </td>

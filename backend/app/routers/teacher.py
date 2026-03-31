@@ -297,19 +297,14 @@ def update_test(test_id: int, req: TestUpdate, db: Session = Depends(get_db), us
     if not test:
         raise HTTPException(404, "Test not found")
 
-    attempt_count = db.query(TestAttempt).filter(TestAttempt.test_id == test_id).count()
-
     # Update scalar fields
     for field in ("title", "module_id", "difficulty", "grade", "topic_id", "deadline"):
         val = getattr(req, field, None)
         if val is not None:
             setattr(test, field, val)
 
-    # Replace questions only if no student attempts yet
+    # Always replace questions (teacher has full control)
     if req.questions is not None:
-        if attempt_count > 0:
-            db.commit()
-            return {"ok": True, "attempts_preserved": True, "attempt_count": attempt_count}
         db.query(Question).filter(Question.test_id == test_id).delete()
         for q in req.questions:
             db.add(Question(test_id=test_id, **q.model_dump()))
@@ -323,9 +318,8 @@ def delete_test(test_id: int, db: Session = Depends(get_db), user: User = Depend
     test = db.query(Test).filter(Test.id == test_id).first()
     if not test:
         raise HTTPException(404, "Test not found")
-    attempt_count = db.query(TestAttempt).filter(TestAttempt.test_id == test_id).count()
-    if attempt_count > 0:
-        raise HTTPException(409, f"Cannot delete test: {attempt_count} student attempt(s) exist. Edit the test instead.")
+    # Cascade delete attempts then the test
+    db.query(TestAttempt).filter(TestAttempt.test_id == test_id).delete()
     db.delete(test)
     db.commit()
     return {"ok": True}
